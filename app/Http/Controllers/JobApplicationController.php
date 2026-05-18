@@ -8,18 +8,26 @@ use App\Http\Requests\JobApplication\UpdateJobApplicationRequest;
 use App\Http\Requests\JobApplication\UpdateStatusJobApplicationRequest;
 use App\Models\Company;
 use App\Models\JobApplication;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class JobApplicationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $userId = Auth::id();
 
         $jobApplications = JobApplication::with('company')
             ->where('applied_by', $userId)
+            ->when($request->filled('status'), function ($q) use ($request) {
+                $q->where('status', $request->status);
+            })
+            ->when($request->filled('priority'), function ($q) use ($request) {
+                $q->where('priority', $request->priority);
+            })
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         $stats = [
             'total' => JobApplication::where('applied_by', $userId)->count(),

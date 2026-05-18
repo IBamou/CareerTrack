@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
@@ -49,6 +50,19 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{company}/archive', 'archive')->name('companies.archive');
         Route::post('/{company}/restore', 'restore')->name('companies.restore')->withTrashed(true);
         Route::delete('/{company}/forceDelete', 'forceDelete')->name('companies.forceDelete')->withTrashed(true);
+    });
+
+    Route::prefix('/interviews')->controller(InterviewController::class)->group(function () {
+        Route::get('/', 'index')->name('interviews.index');
+        Route::get('/archives', 'archives')->name('interviews.archives');
+        Route::get('/create', 'create')->name('interviews.create');
+        Route::post('/store', 'store')->name('interviews.store');
+        Route::get('/{interview}', 'show')->name('interviews.show');
+        Route::get('/{interview}/edit', 'edit')->name('interviews.edit');
+        Route::put('/{interview}/update', 'update')->name('interviews.update');
+        Route::delete('/{interview}/archive', 'archive')->name('interviews.archive');
+        Route::post('/{interview}/restore', 'restore')->name('interviews.restore')->withTrashed(true);
+        Route::delete('/{interview}/forceDelete', 'forceDelete')->name('interviews.forceDelete')->withTrashed(true);
     });
 });
 

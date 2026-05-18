@@ -9,13 +9,14 @@ use Database\Factories\JobApplicationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JobApplication extends Model
 {
     /** @use HasFactory<JobApplicationFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['job_title', 'location_type', 'location_city', 'links', 'status', 'applied_at', 'next_follow_up_at',  'notes', 'company_id', 'applied_by'];
+    protected $fillable = ['job_title', 'location_type', 'location_city', 'links', 'status', 'priority', 'applied_at', 'next_follow_up_at',  'notes', 'company_id', 'applied_by'];
 
     protected $casts = [
         'status' => JobApplicationStatus::class,
@@ -33,5 +34,10 @@ class JobApplication extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(Interview::class, 'job_application_id');
     }
 }
