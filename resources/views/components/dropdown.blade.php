@@ -1,10 +1,13 @@
-@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'py-1 bg-white dark:bg-gray-700'])
+@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'py-1 bg-white dark:bg-gray-800', 'dropdownClasses' => ''])
 
 @php
 $alignmentClasses = match ($align) {
-    'left' => 'ltr:origin-top-left rtl:origin-top-right start-0',
-    'top' => 'origin-top',
-    default => 'ltr:origin-top-right rtl:origin-top-left end-0',
+    'left' => 'origin-top-left left-0',
+    'top-start' => 'origin-bottom-left left-0 bottom-full mb-2',
+    'top-end' => 'origin-bottom-right right-0 bottom-full mb-2',
+    'bottom-start' => 'origin-top-left left-0 top-full mt-2',
+    'bottom-end' => 'origin-top-right right-0 top-full mt-2',
+    default => 'origin-top-right right-0',
 };
 
 $width = match ($width) {
@@ -25,10 +28,10 @@ $width = match ($width) {
             x-transition:leave="transition ease-in duration-75"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
-            class="absolute z-50 mt-2 {{ $width }} rounded-md shadow-lg {{ $alignmentClasses }}"
+            class="absolute z-50 {{ $width }} rounded-lg shadow-lg ring-1 ring-black/5 dark:ring-white/10 {{ $alignmentClasses }} {{ $dropdownClasses }}"
             style="display: none;"
             @click="open = false">
-        <div class="rounded-md ring-1 ring-black ring-opacity-5 {{ $contentClasses }}">
+        <div class="rounded-lg {{ $contentClasses }} overflow-hidden">
             {{ $content }}
         </div>
     </div>
