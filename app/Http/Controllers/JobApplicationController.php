@@ -8,6 +8,7 @@ use App\Http\Requests\JobApplication\UpdateJobApplicationRequest;
 use App\Http\Requests\JobApplication\UpdateStatusJobApplicationRequest;
 use App\Models\Company;
 use App\Models\JobApplication;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,6 +17,29 @@ class JobApplicationController extends Controller
     public function index(Request $request)
     {
         $userId = Auth::id();
+
+        if ($request->filled('bulk_action') && $request->filled('selected_ids')) {
+            $ids = $request->selected_ids;
+            $applications = JobApplication::whereIn('id', $ids)
+                ->where('applied_by', $userId)
+                ->get();
+
+            if ($request->bulk_action === 'archive') {
+                foreach ($applications as $app) {
+                    if (Auth::user()->can('archive', $app)) {
+                        $app->delete();
+                    }
+                }
+            } elseif ($request->bulk_action === 'updateStatus' && $request->filled('status')) {
+                foreach ($applications as $app) {
+                    if (Auth::user()->can('update', $app)) {
+                        $app->update(['status' => $request->status]);
+                    }
+                }
+            }
+
+            return redirect()->route('job-applications.index');
+        }
 
         $jobApplications = JobApplication::with('company')
             ->where('applied_by', $userId)
@@ -49,6 +73,17 @@ class JobApplicationController extends Controller
         return view('jobApplication.index', compact('jobApplications', 'stats'));
     }
 
+    public function kanban()
+    {
+        $applications = JobApplication::where('applied_by', Auth::id())
+            ->with('company')
+            ->orderBy('updated_at', 'desc')
+            ->get()
+            ->groupBy(fn($app) => $app->status->value);
+
+        return view('jobApplication.kanban', compact('applications'));
+    }
+
     public function archives()
     {
         $jobApplications = JobApplication::onlyTrashed()
@@ -63,8 +98,9 @@ class JobApplicationController extends Controller
     public function create()
     {
         $companies = Company::where('user_id', Auth::id())->get();
+        $tags = Tag::where('user_id', Auth::id())->orderBy('name')->get();
 
-        return view('jobApplication.create', compact('companies'));
+        return view('jobApplication.create', compact('companies', 'tags'));
     }
 
     public function store(StoreJobApplicationRequest $request)
@@ -85,7 +121,11 @@ class JobApplicationController extends Controller
 
         unset($validated['new_company_name']);
 
-        JobApplication::create($validated);
+        $application = JobApplication::create($validated);
+
+        if ($request->filled('tags')) {
+            $application->syncTags($request->tags);
+        }
 
         return redirect()->route('job-applications.index');
     }
@@ -94,14 +134,17 @@ class JobApplicationController extends Controller
     {
         $this->authorize('view', $jobApplication);
 
+        $jobApplication->load(['interviews', 'documents', 'activities']);
+
         return view('jobApplication.show', compact('jobApplication'));
     }
 
     public function edit(JobApplication $jobApplication)
     {
         $companies = Company::where('user_id', Auth::id())->get();
+        $tags = Tag::where('user_id', Auth::id())->orderBy('name')->get();
 
-        return view('jobApplication.edit', compact('jobApplication', 'companies'));
+        return view('jobApplication.edit', compact('jobApplication', 'companies', 'tags'));
     }
 
     public function update(UpdateJobApplicationRequest $request, JobApplication $jobApplication)
@@ -124,6 +167,10 @@ class JobApplicationController extends Controller
         unset($validated['new_company_name']);
 
         $jobApplication->update($validated);
+
+        if ($request->filled('tags')) {
+            $jobApplication->syncTags($request->tags);
+        }
 
         return redirect()->route('job-applications.show', ['jobApplication' => $jobApplication->id]);
     }
@@ -164,5 +211,76 @@ class JobApplicationController extends Controller
         $jobApplication->forceDelete();
 
         return redirect()->route('job-applications.index');
+    }
+
+    public function bulkAction(Request $request)
+    {
+        $ids = $request->input('selected', []);
+        $action = $request->input('bulk_action');
+        $userId = Auth::id();
+
+        if (empty($ids) || !$action) {
+            return redirect()->route('job-applications.index');
+        }
+
+        $applications = JobApplication::whereIn('id', $ids)
+            ->where('applied_by', $userId)
+            ->get();
+
+        if ($action === 'archive') {
+            foreach ($applications as $app) {
+                if (Auth::user()->can('archive', $app)) {
+                    $app->delete();
+                }
+            }
+        } elseif ($action === 'change_status' && $request->filled('bulk_status')) {
+            foreach ($applications as $app) {
+                if (Auth::user()->can('update', $app)) {
+                    $app->update(['status' => $request->bulk_status]);
+                }
+            }
+        }
+
+        return redirect()->route('job-applications.index');
+    }
+
+    public function export()
+    {
+        $applications = JobApplication::where('applied_by', Auth::id())
+            ->with('company')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $filename = 'job-applications-' . now()->format('Y-m-d') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function () use ($applications) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Job Title', 'Company', 'Status', 'Priority', 'Location', 'Location Type', 'Applied At', 'Salary Min', 'Salary Max', 'Currency', 'Notes', 'Created At']);
+
+            foreach ($applications as $app) {
+                fputcsv($handle, [
+                    $app->job_title,
+                    $app->company?->name ?? '',
+                    $app->status->value,
+                    $app->priority,
+                    $app->location_city ?? '',
+                    $app->location_type?->value ?? '',
+                    $app->applied_at?->format('Y-m-d') ?? '',
+                    $app->salary_min ?? '',
+                    $app->salary_max ?? '',
+                    $app->currency ?? '',
+                    $app->notes ?? '',
+                    $app->created_at->format('Y-m-d'),
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

@@ -54,61 +54,87 @@
                     action-label="Add Application"
                 />
             @else
-                <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-                    <div class="divide-y divide-gray-100 dark:divide-gray-800">
-                        @foreach ($jobApplications as $app)
-                            <div class="p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                <div class="flex items-center gap-4">
-                                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-sm font-semibold flex-shrink-0">
-                                        {{ strtoupper(substr($app->company?->name ?? $app->job_title, 0, 1)) }}
-                                    </div>
+                <form method="POST" action="{{ route('job-applications.bulk-action') }}" x-data="{ selected: [], selectAll: false }">
+                    @csrf
+                    <input type="hidden" name="bulk_action" value="">
+                    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+                        <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                            @foreach ($jobApplications as $app)
+                                <div class="p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <div class="flex items-center gap-4">
+                                        <input type="checkbox" name="selected[]" value="{{ $app->id }}" x-model="selected" class="rounded border-gray-300 dark:border-gray-600 text-emerald-600 focus:ring-emerald-500">
 
-                                    <div class="flex-1 min-w-0">
-                                        <a href="{{ route('job-applications.show', $app) }}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 truncate block">{{ $app->job_title }}</a>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                                            {{ $app->company?->name ?? 'No company' }}
-                                            @if ($app->location_city)
-                                                &middot; {{ $app->location_city }}
-                                            @endif
-                                            &middot; {{ $app->created_at?->diffForHumans() }}
-                                        </p>
-                                    </div>
+                                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-sm font-semibold flex-shrink-0">
+                                            {{ strtoupper(substr($app->company?->name ?? $app->job_title, 0, 1)) }}
+                                        </div>
 
-                                    <x-status-badge :status="$app->status" />
+                                        <div class="flex-1 min-w-0">
+                                            <a href="{{ route('job-applications.show', $app) }}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 truncate block">{{ $app->job_title }}</a>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                                {{ $app->company?->name ?? 'No company' }}
+                                                @if ($app->location_city)
+                                                    &middot; {{ $app->location_city }}
+                                                @endif
+                                                &middot; {{ $app->created_at?->diffForHumans() }}
+                                            </p>
+                                        </div>
 
-                                    @php
-                                        $priorityClasses = [
-                                            'low' => 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
-                                            'normal' => 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300',
-                                            'high' => 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300',
-                                        ];
-                                    @endphp
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize {{ $priorityClasses[$app->priority] ?? $priorityClasses['normal'] }}">{{ $app->priority }}</span>
+                                        <x-status-badge :status="$app->status" />
 
-                                    <div class="flex items-center gap-1 flex-shrink-0" x-data="{ open: false }">
-                                        <button @click="open = !open" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
-                                        </button>
-                                        <div x-show="open" @click.outside="open = false" class="absolute right-0 z-50 mt-8 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1" style="display: none;">
-                                            <a href="{{ route('job-applications.show', $app) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">View</a>
-                                            <a href="{{ route('job-applications.edit', $app) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">Edit</a>
-                                            <form method="POST" action="{{ route('job-applications.archive', $app) }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10">Archive</button>
-                                            </form>
+                                        @php
+                                            $priorityClasses = [
+                                                'low' => 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
+                                                'normal' => 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300',
+                                                'high' => 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300',
+                                            ];
+                                        @endphp
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize {{ $priorityClasses[$app->priority] ?? $priorityClasses['normal'] }}">{{ $app->priority }}</span>
+
+                                        <div class="flex items-center gap-1 flex-shrink-0" x-data="{ open: false }">
+                                            <button @click="open = !open" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+                                            </button>
+                                            <div x-show="open" @click.outside="open = false" class="absolute right-0 z-50 mt-8 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1" style="display: none;">
+                                                <a href="{{ route('job-applications.show', $app) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">View</a>
+                                                <a href="{{ route('job-applications.edit', $app) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">Edit</a>
+                                                <form method="POST" action="{{ route('job-applications.archive', $app) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10">Archive</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
-                </div>
 
-                <div class="mt-6">
-                    {{ $jobApplications->links() }}
-                </div>
+                    <div class="mt-6">
+                        {{ $jobApplications->links() }}
+                    </div>
+
+                    <!-- Bulk actions bar -->
+                    <div x-show="selected.length > 0" x-cloak class="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-2xl">
+                        <div class="max-w-7xl mx-auto flex items-center justify-between">
+                            <p class="text-sm text-gray-600 dark:text-gray-400" x-text="selected.length + ' selected'"></p>
+                            <div class="flex items-center gap-3">
+                                <select name="bulk_status" class="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-lg text-sm" @change="if($event.target.value) { $event.target.form.querySelector('input[name=bulk_action]').value = 'change_status'; $event.target.form.submit() }">
+                                    <option value="">Change Status…</option>
+                                    @foreach (\App\Enums\JobApplicationStatus::cases() as $s)
+                                        <option value="{{ $s->value }}">{{ $s->label() }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="submit" @click="document.querySelector('input[name=bulk_action]').value = 'archive'" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                    Archive Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             @endif
+
+            <style>[x-cloak] { display: none !important; }</style>
         </div>
     </div>
 </x-app-layout>

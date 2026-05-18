@@ -27,6 +27,12 @@
                     <x-nav-link :href="route('interviews.index')" :active="request()->routeIs('interviews.*')">
                         {{ __('Interviews') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('contacts.index')" :active="request()->routeIs('contacts.*')">
+                        {{ __('Contacts') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('reminders.index')" :active="request()->routeIs('reminders.*')">
+                        {{ __('Reminders') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -93,6 +99,12 @@
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('interviews.index')" :active="request()->routeIs('interviews.*')">
                         {{ __('Interviews') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('contacts.index')" :active="request()->routeIs('contacts.*')">
+                        {{ __('Contacts') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('reminders.index')" :active="request()->routeIs('reminders.*')">
+                        {{ __('Reminders') }}
                     </x-responsive-nav-link>
                 </div>
 
