@@ -6,20 +6,20 @@
             <form method="GET" action="{{ route('search') }}" class="mb-6">
                 <div class="relative">
                     <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" name="q" value="{{ $query }}" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-12 pr-24 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all" placeholder="Search applications, companies..." autofocus />
-                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">Search</button>
+                    <input type="text" name="q" value="{{ $query }}" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-12 pr-24 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-emerald-500 dark:focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all" placeholder="Search applications, companies, interviews..." autofocus />
+                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors">Search</button>
                 </div>
             </form>
 
             @if ($query)
             <div class="flex items-center gap-1 mb-6 border-b border-gray-200 dark:border-gray-700">
-                <a href="{{ route('search', ['q' => $query, 'type' => 'all']) }}" class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors {{ $type === 'all' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg' }}">
+                <a href="{{ route('search', ['q' => $query, 'type' => 'all']) }}" class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors {{ $type === 'all' ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg' }}">
                     All ({{ $totalResults }})
                 </a>
-                <a href="{{ route('search', ['q' => $query, 'type' => 'applications']) }}" class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors {{ $type === 'applications' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg' }}">
+                <a href="{{ route('search', ['q' => $query, 'type' => 'applications']) }}" class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors {{ $type === 'applications' ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg' }}">
                     Applications ({{ $appCount }})
                 </a>
-                <a href="{{ route('search', ['q' => $query, 'type' => 'companies']) }}" class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors {{ $type === 'companies' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg' }}">
+                <a href="{{ route('search', ['q' => $query, 'type' => 'companies']) }}" class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors {{ $type === 'companies' ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg' }}">
                     Companies ({{ $companyCount }})
                 </a>
             </div>
@@ -39,9 +39,9 @@
                 </h3>
                 <div class="space-y-2">
                     @foreach ($applications as $app)
-                    <a href="{{ route('job-applications.show', $app) }}" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-sm transition-all">
+                    <a href="{{ route('job-applications.show', $app) }}" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-sm transition-all">
                         <div class="flex items-center gap-3">
-                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-xs font-semibold flex-shrink-0">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-xs font-semibold flex-shrink-0">
                                 {{ strtoupper(substr($app->company?->name ?? $app->job_title, 0, 1)) }}
                             </div>
                             <div class="flex-1 min-w-0">
@@ -69,9 +69,9 @@
                 </h3>
                 <div class="space-y-2">
                     @foreach ($companies as $company)
-                    <a href="{{ route('companies.show', $company) }}" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-sm transition-all">
+                    <a href="{{ route('companies.show', $company) }}" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-sm transition-all">
                         <div class="flex items-center gap-3">
-                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-xs font-semibold flex-shrink-0">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-xs font-semibold flex-shrink-0">
                                 {{ strtoupper(substr($company->name, 0, 1)) }}
                             </div>
                             <div class="flex-1 min-w-0">

@@ -1,23 +1,22 @@
-@props(['title' => '', 'value' => 0, 'icon' => '', 'color' => 'indigo'])
+@props(['title' => '', 'value' => 0, 'icon' => '', 'color' => 'emerald'])
 
 @php
 $colorMap = [
-    'blue' => ['bg' => 'bg-blue-50 dark:bg-blue-900/20', 'icon' => 'text-blue-600 dark:text-blue-400', 'count' => 'text-blue-600 dark:text-blue-400'],
-    'indigo' => ['bg' => 'bg-indigo-50 dark:bg-indigo-900/20', 'icon' => 'text-indigo-600 dark:text-indigo-400', 'count' => 'text-indigo-600 dark:text-indigo-400'],
-    'purple' => ['bg' => 'bg-purple-50 dark:bg-purple-900/20', 'icon' => 'text-purple-600 dark:text-purple-400', 'count' => 'text-purple-600 dark:text-purple-400'],
-    'green' => ['bg' => 'bg-green-50 dark:bg-green-900/20', 'icon' => 'text-green-600 dark:text-green-400', 'count' => 'text-green-600 dark:text-green-400'],
     'emerald' => ['bg' => 'bg-emerald-50 dark:bg-emerald-900/20', 'icon' => 'text-emerald-600 dark:text-emerald-400', 'count' => 'text-emerald-600 dark:text-emerald-400'],
+    'blue' => ['bg' => 'bg-blue-50 dark:bg-blue-900/20', 'icon' => 'text-blue-600 dark:text-blue-400', 'count' => 'text-blue-600 dark:text-blue-400'],
+    'purple' => ['bg' => 'bg-purple-50 dark:bg-purple-900/20', 'icon' => 'text-purple-600 dark:text-purple-400', 'count' => 'text-purple-600 dark:text-purple-400'],
     'orange' => ['bg' => 'bg-orange-50 dark:bg-orange-900/20', 'icon' => 'text-orange-600 dark:text-orange-400', 'count' => 'text-orange-600 dark:text-orange-400'],
+    'amber' => ['bg' => 'bg-amber-50 dark:bg-amber-900/20', 'icon' => 'text-amber-600 dark:text-amber-400', 'count' => 'text-amber-600 dark:text-amber-400'],
     'gray' => ['bg' => 'bg-gray-50 dark:bg-gray-800', 'icon' => 'text-gray-600 dark:text-gray-400', 'count' => 'text-gray-900 dark:text-gray-100'],
 ];
-$colors = $colorMap[$color] ?? $colorMap['indigo'];
+$colors = $colorMap[$color] ?? $colorMap['emerald'];
 @endphp
 
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:shadow-sm transition-shadow">
+<div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
     <div class="flex items-center gap-4">
         @if ($icon)
-        <div class="w-11 h-11 {{ $colors['bg'] }} rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 {{ $colors['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-12 h-12 {{ $colors['bg'] }} rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 {{ $colors['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {!! $icon !!}
             </svg>
         </div>

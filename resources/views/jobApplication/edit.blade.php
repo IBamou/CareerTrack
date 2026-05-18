@@ -27,7 +27,7 @@
 
                         <div>
                             <x-input-label for="status" value="Status" />
-                            <select id="status" name="status" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm">
+                            <select id="status" name="status" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">
                                 @foreach (\App\Enums\JobApplicationStatus::cases() as $s)
                                     <option value="{{ $s->value }}" {{ old('status', $jobApplication->status->value) === $s->value ? 'selected' : '' }}>{{ $s->label() }}</option>
                                 @endforeach
@@ -37,7 +37,7 @@
 
                         <div>
                             <x-input-label for="priority" value="Priority" />
-                            <select id="priority" name="priority" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm">
+                            <select id="priority" name="priority" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">
                                 <option value="low" {{ old('priority', $jobApplication->priority) === 'low' ? 'selected' : '' }}>Low</option>
                                 <option value="normal" {{ old('priority', $jobApplication->priority) === 'normal' ? 'selected' : '' }}>Normal</option>
                                 <option value="high" {{ old('priority', $jobApplication->priority) === 'high' ? 'selected' : '' }}>High</option>
@@ -47,7 +47,7 @@
 
                         <div>
                             <x-input-label for="location_type" value="Location Type" />
-                            <select id="location_type" name="location_type" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm">
+                            <select id="location_type" name="location_type" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">
                                 <option value="">Select...</option>
                                 @foreach (\App\Enums\JobLocationType::cases() as $lt)
                                     <option value="{{ $lt->value }}" {{ old('location_type', $jobApplication->location_type?->value) === $lt->value ? 'selected' : '' }}>{{ $lt->label() }}</option>
@@ -86,12 +86,12 @@
                 </x-section-card>
 
                 <x-section-card title="Notes" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>'>
-                    <textarea id="notes" name="notes" rows="4" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm">{{ old('notes', $jobApplication->notes) }}</textarea>
+                    <textarea id="notes" name="notes" rows="4" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">{{ old('notes', $jobApplication->notes) }}</textarea>
                     <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                 </x-section-card>
 
                 <div class="flex gap-3 justify-end">
-                    <a href="{{ route('job-applications.show', $jobApplication) }}" class="inline-flex items-center px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <a href="{{ route('job-applications.show', $jobApplication) }}" class="inline-flex items-center px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl font-medium text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         Cancel
                     </a>
                     <x-primary-button>

@@ -15,7 +15,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             @if (session('status'))
-                <div class="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                <div class="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl text-sm font-medium text-emerald-700 dark:text-emerald-300">
                     {{ session('status') }}
                 </div>
             @endif
@@ -28,7 +28,7 @@
                     action-label="Go to Interviews"
                 />
             @else
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-xl overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-2xl overflow-hidden">
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @foreach ($interviews as $interview)
                             <div class="p-4 sm:p-5 flex items-center justify-between">
