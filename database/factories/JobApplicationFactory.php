@@ -18,7 +18,7 @@ class JobApplicationFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'priority' => fake()->randomElement(['low', 'normal', 'high']),
         ];
     }
 }

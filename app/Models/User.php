@@ -40,4 +40,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(JobApplication::class, 'applied_by');
     }
+
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(Interview::class, 'user_id');
+    }
 }

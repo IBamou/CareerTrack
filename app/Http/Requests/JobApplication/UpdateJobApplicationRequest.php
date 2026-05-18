@@ -23,6 +23,7 @@ class UpdateJobApplicationRequest extends FormRequest
             'company_id' => ['nullable', 'integer', Rule::exists('companies', 'id')->where('user_id', auth()->id())],
             'new_company_name' => 'nullable|string|max:255',
             'status' => ['sometimes|required', new Enum(JobApplicationStatus::class)],
+            'priority' => 'sometimes|required|string|in:low,normal,high',
             'location_type' => ['sometimes|required', new Enum(JobLocationType::class)],
             'location_city' => 'nullable|string|max:255',
             'applied_at' => 'nullable|date',

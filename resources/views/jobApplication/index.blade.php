@@ -21,6 +21,25 @@
                 </a>
             </div>
 
+            <!-- Filters -->
+            <form method="GET" action="{{ route('job-applications.index') }}" class="flex flex-wrap items-center gap-3">
+                <select name="status" class="w-auto border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm" onchange="this.form.submit()">
+                    <option value="">All statuses</option>
+                    @foreach (\App\Enums\JobApplicationStatus::cases() as $s)
+                        <option value="{{ $s->value }}" {{ request('status') === $s->value ? 'selected' : '' }}>{{ $s->label() }}</option>
+                    @endforeach
+                </select>
+                <select name="priority" class="w-auto border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm" onchange="this.form.submit()">
+                    <option value="">All priorities</option>
+                    <option value="low" {{ request('priority') === 'low' ? 'selected' : '' }}>Low</option>
+                    <option value="normal" {{ request('priority') === 'normal' ? 'selected' : '' }}>Normal</option>
+                    <option value="high" {{ request('priority') === 'high' ? 'selected' : '' }}>High</option>
+                </select>
+                @if (request()->anyFilled(['status', 'priority']))
+                    <a href="{{ route('job-applications.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline">Clear</a>
+                @endif
+            </form>
+
             @if ($jobApplications->isEmpty())
                 <x-empty-state
                     title="No applications yet"
@@ -50,6 +69,15 @@
                                     </div>
 
                                     <x-status-badge :status="$app->status" />
+
+                                    @php
+                                        $priorityClasses = [
+                                            'low' => 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
+                                            'normal' => 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300',
+                                            'high' => 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300',
+                                        ];
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize {{ $priorityClasses[$app->priority] ?? $priorityClasses['normal'] }}">{{ $app->priority }}</span>
 
                                     <div class="flex items-center gap-1 flex-shrink-0" x-data="{ open: false }">
                                         <button @click="open = !open" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">

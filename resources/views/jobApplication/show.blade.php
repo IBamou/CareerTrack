@@ -49,6 +49,7 @@
                 <x-section-card title="Application Details" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'>
                     <dl class="space-y-3">
                         <div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Applied</dt><dd class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{{ $jobApplication->applied_at?->format('M d, Y') ?? 'Not set' }}</dd></div>
+                        <div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Priority</dt><dd class="mt-0.5">@php $priorityClasses = ['low' => 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300', 'normal' => 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300', 'high' => 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300']; @endphp<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium capitalize {{ $priorityClasses[$jobApplication->priority] ?? $priorityClasses['normal'] }}">{{ $jobApplication->priority }}</span></dd></div>
                         <div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Location Type</dt><dd class="mt-0.5">{!! $jobApplication->location_type ? '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">' . $jobApplication->location_type->label() . '</span>' : '<span class="text-sm text-gray-500 dark:text-gray-400">Not specified</span>' !!}</dd></div>
                     </dl>
                 </x-section-card>
@@ -144,6 +145,36 @@
                     </div>
                 </x-section-card>
             @endif
+
+            <!-- Interviews -->
+            <x-section-card title="Interviews" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>'>
+                <div class="space-y-3">
+                    @if ($jobApplication->interviews->isEmpty())
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No interviews yet.</p>
+                    @else
+                        @foreach ($jobApplication->interviews as $interview)
+                            <div class="flex items-center justify-between p-3 -mx-4 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $interview->type }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $interview->scheduled_at?->format('M d, Y g:i A') }}</p>
+                                    @if ($interview->result)
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Result: {{ $interview->result }}</p>
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-2 ml-4">
+                                    <a href="{{ route('interviews.edit', $interview) }}" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Edit</a>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                    <div class="pt-2">
+                        <a href="{{ route('interviews.create', ['job_application_id' => $jobApplication->id]) }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Add Interview
+                        </a>
+                    </div>
+                </div>
+            </x-section-card>
         </div>
     </div>
 </x-app-layout>

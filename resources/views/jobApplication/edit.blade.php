@@ -36,6 +36,16 @@
                         </div>
 
                         <div>
+                            <x-input-label for="priority" value="Priority" />
+                            <select id="priority" name="priority" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm">
+                                <option value="low" {{ old('priority', $jobApplication->priority) === 'low' ? 'selected' : '' }}>Low</option>
+                                <option value="normal" {{ old('priority', $jobApplication->priority) === 'normal' ? 'selected' : '' }}>Normal</option>
+                                <option value="high" {{ old('priority', $jobApplication->priority) === 'high' ? 'selected' : '' }}>High</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('priority')" class="mt-2" />
+                        </div>
+
+                        <div>
                             <x-input-label for="location_type" value="Location Type" />
                             <select id="location_type" name="location_type" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm">
                                 <option value="">Select...</option>
