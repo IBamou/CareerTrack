@@ -4,18 +4,24 @@
     <div class="p-4 lg:p-6">
         <div class="max-w-7xl mx-auto space-y-6">
 
+            @if (session('status'))
+                <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                    {{ session('status') }}
+                </div>
+            @endif
+
             <!-- Stats row -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <x-stat-card title="Total" :value="$stats['total']" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>' color="indigo" />
+                <x-stat-card title="Total" :value="$stats['total']" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>' color="emerald" />
                 <x-stat-card title="Active" :value="$stats['active']" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>' color="blue" />
                 <x-stat-card title="Interviews" :value="$stats['interviews']" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>' color="purple" />
-                <x-stat-card title="Offers" :value="$stats['offers']" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>' color="emerald" />
+                <x-stat-card title="Offers" :value="$stats['offers']" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>' color="amber" />
             </div>
 
             <!-- Action bar -->
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">All Applications</h2>
-                <a href="{{ route('job-applications.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+                <a href="{{ route('job-applications.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     Add Application
                 </a>
@@ -23,13 +29,13 @@
 
             <!-- Filters -->
             <form method="GET" action="{{ route('job-applications.index') }}" class="flex flex-wrap items-center gap-3">
-                <select name="status" class="w-auto border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm" onchange="this.form.submit()">
+                <select name="status" class="w-auto border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm text-sm" onchange="this.form.submit()">
                     <option value="">All statuses</option>
                     @foreach (\App\Enums\JobApplicationStatus::cases() as $s)
                         <option value="{{ $s->value }}" {{ request('status') === $s->value ? 'selected' : '' }}>{{ $s->label() }}</option>
                     @endforeach
                 </select>
-                <select name="priority" class="w-auto border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm" onchange="this.form.submit()">
+                <select name="priority" class="w-auto border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm text-sm" onchange="this.form.submit()">
                     <option value="">All priorities</option>
                     <option value="low" {{ request('priority') === 'low' ? 'selected' : '' }}>Low</option>
                     <option value="normal" {{ request('priority') === 'normal' ? 'selected' : '' }}>Normal</option>
@@ -48,17 +54,17 @@
                     action-label="Add Application"
                 />
             @else
-                <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+                <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
                     <div class="divide-y divide-gray-100 dark:divide-gray-800">
                         @foreach ($jobApplications as $app)
                             <div class="p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                 <div class="flex items-center gap-4">
-                                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-sm font-semibold flex-shrink-0">
+                                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-sm font-semibold flex-shrink-0">
                                         {{ strtoupper(substr($app->company?->name ?? $app->job_title, 0, 1)) }}
                                     </div>
 
                                     <div class="flex-1 min-w-0">
-                                        <a href="{{ route('job-applications.show', $app) }}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 truncate block">{{ $app->job_title }}</a>
+                                        <a href="{{ route('job-applications.show', $app) }}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 truncate block">{{ $app->job_title }}</a>
                                         <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
                                             {{ $app->company?->name ?? 'No company' }}
                                             @if ($app->location_city)
@@ -73,7 +79,7 @@
                                     @php
                                         $priorityClasses = [
                                             'low' => 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
-                                            'normal' => 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300',
+                                            'normal' => 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300',
                                             'high' => 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300',
                                         ];
                                     @endphp

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\JobApplicationStatus;
 use App\Models\Company;
+use App\Models\Interview;
 use App\Models\JobApplication;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,12 +20,8 @@ class DashboardController extends Controller
             'active' => JobApplication::where('applied_by', $userId)
                 ->whereIn('status', [JobApplicationStatus::Applied, JobApplicationStatus::InReview])
                 ->count(),
-            'interviews' => JobApplication::where('applied_by', $userId)
-                ->whereIn('status', [
-                    JobApplicationStatus::HrInterview,
-                    JobApplicationStatus::TechnicalInterview,
-                    JobApplicationStatus::FinalInterview,
-                ])
+            'interviews' => Interview::where('user_id', $userId)
+                ->where('scheduled_at', '>=', now())
                 ->count(),
         ];
 

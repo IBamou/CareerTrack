@@ -48,7 +48,7 @@ $companiesJson = $companies->map(fn($c) => ['id' => $c->id, 'name' => $c->name])
         @keydown.enter.prevent="filtered.length === 1 ? select(filtered[0]) : (filtered.length === 0 && search ? addNew() : null)"
         @keydown.escape="open = false"
         placeholder="Search or type a new company..."
-        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm"
+        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-lg shadow-sm"
         autocomplete="off"
     />
 
@@ -68,10 +68,10 @@ $companiesJson = $companies->map(fn($c) => ['id' => $c->id, 'name' => $c->name])
             <button
                 type="button"
                 @click="select(company)"
-                class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-left hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
-                :class="selectedId == company.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300'"
+                class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-left hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
+                :class="selectedId == company.id ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'text-gray-700 dark:text-gray-300'"
             >
-                <div class="flex items-center justify-center w-7 h-7 rounded-md bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-xs font-semibold flex-shrink-0">
+                <div class="flex items-center justify-center w-7 h-7 rounded-md bg-gradient-to-br from-emerald-400 to-teal-500 text-white text-xs font-semibold flex-shrink-0">
                     <span x-text="company.name.charAt(0).toUpperCase()"></span>
                 </div>
                 <span x-text="company.name"></span>
@@ -82,7 +82,7 @@ $companiesJson = $companies->map(fn($c) => ['id' => $c->id, 'name' => $c->name])
             <button
                 type="button"
                 @click="addNew"
-                class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-left text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border-t border-gray-100 dark:border-gray-700 transition-colors font-medium"
+                class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-left text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 border-t border-gray-100 dark:border-gray-700 transition-colors font-medium"
             >
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 <span>Add "<span x-text="search"></span>"</span>
