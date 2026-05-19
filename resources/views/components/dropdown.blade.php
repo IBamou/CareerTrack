@@ -36,19 +36,3 @@ $width = match ($width) {
         </div>
     </div>
 </div>
-
-    <div x-show="open"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-75"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="absolute z-50 {{ $width }} rounded-lg shadow-lg ring-1 ring-black/5 dark:ring-white/10 {{ $alignmentClasses }} {{ $dropdownClasses }}"
-            style="display: none;"
-            @click="open = false">
-        <div class="rounded-lg {{ $contentClasses }} overflow-hidden">
-            {{ $content }}
-        </div>
-    </div>
-</div>
