@@ -1,311 +1,462 @@
 <x-app-layout>
     <x-slot name="header">{{ $jobApplication->job_title }}</x-slot>
 
-    <div class="p-4 lg:p-6">
-        <div class="max-w-5xl mx-auto space-y-6">
+    @if (session('status'))
+        <div class="mb-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl text-sm font-medium text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">check_circle</span>
+            {{ session('status') }}
+        </div>
+    @endif
 
-            @if (session('status'))
-                <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                    {{ session('status') }}
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-4">
+        <a class="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium" href="{{ route('job-applications.index') }}">Applications</a>
+        <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+        <span class="text-gray-900 dark:text-white font-semibold">{{ $jobApplication->job_title }}</span>
+    </nav>
+
+    <!-- Hero header -->
+    <div class="flex items-start justify-between gap-4 mb-6">
+        <div class="flex items-start gap-4">
+            <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-container text-white text-xl font-bold shadow-sm flex-shrink-0">
+                {{ strtoupper(substr($jobApplication->company?->name ?? $jobApplication->job_title, 0, 1)) }}
+            </div>
+            <div>
+                <h2 class="text-display-lg text-on-surface">{{ $jobApplication->job_title }}</h2>
+                <div class="flex items-center gap-2 mt-2 flex-wrap">
+                    @php
+                        $statusColors = [
+                            'applied' => ['bg' => 'bg-primary/10', 'text' => 'text-primary'],
+                            'in_review' => ['bg' => 'bg-blue-50 dark:bg-blue-900/20', 'text' => 'text-blue-600 dark:text-blue-400'],
+                            'hr_interview' => ['bg' => 'bg-purple-50 dark:bg-purple-900/20', 'text' => 'text-purple-600 dark:text-purple-400'],
+                            'technical_interview' => ['bg' => 'bg-indigo-50 dark:bg-indigo-900/20', 'text' => 'text-indigo-600 dark:text-indigo-400'],
+                            'final_interview' => ['bg' => 'bg-violet-50 dark:bg-violet-900/20', 'text' => 'text-violet-600 dark:text-violet-400'],
+                            'offer' => ['bg' => 'bg-amber-50 dark:bg-amber-900/20', 'text' => 'text-amber-600 dark:text-amber-400'],
+                            'accepted' => ['bg' => 'bg-secondary/10', 'text' => 'text-secondary'],
+                            'rejected' => ['bg' => 'bg-error/5', 'text' => 'text-error'],
+                            'ghosted' => ['bg' => 'bg-gray-100 dark:bg-gray-700', 'text' => 'text-gray-500 dark:text-gray-400'],
+                        ];
+                        $statusLabels = [
+                            'applied' => 'Applied', 'in_review' => 'In Review', 'hr_interview' => 'HR Interview',
+                            'technical_interview' => 'Technical Interview', 'final_interview' => 'Final Interview',
+                            'offer' => 'Offer', 'accepted' => 'Accepted', 'rejected' => 'Rejected', 'ghosted' => 'Ghosted',
+                        ];
+                        $sc = $statusColors[$jobApplication->status->value] ?? $statusColors['applied'];
+                    @endphp
+                    <span class="px-2 py-0.5 rounded text-[11px] font-medium {{ $sc['bg'] }} {{ $sc['text'] }}">
+                        {{ $statusLabels[$jobApplication->status->value] ?? $jobApplication->status->label() }}
+                    </span>
+                    @php
+                        $priorityColors = [
+                            'low' => ['bg' => 'bg-gray-100 dark:bg-gray-700', 'text' => 'text-gray-500 dark:text-gray-400'],
+                            'normal' => ['bg' => 'bg-amber-50 dark:bg-amber-900/20', 'text' => 'text-amber-600 dark:text-amber-400'],
+                            'high' => ['bg' => 'bg-error/5', 'text' => 'text-error'],
+                        ];
+                        $pc = $priorityColors[$jobApplication->priority] ?? $priorityColors['normal'];
+                    @endphp
+                    <span class="px-2 py-0.5 rounded text-[11px] font-medium {{ $pc['bg'] }} {{ $pc['text'] }}">
+                        {{ ucfirst($jobApplication->priority) }} Priority
+                    </span>
+                    @if ($jobApplication->salary_min || $jobApplication->salary_max)
+                        <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-primary/10 text-primary">
+                            {{ $jobApplication->salary_min ? number_format($jobApplication->salary_min) : '' }}{{ $jobApplication->salary_min && $jobApplication->salary_max ? ' - ' : '' }}{{ $jobApplication->salary_max ? number_format($jobApplication->salary_max) : '' }} {{ $jobApplication->currency }}
+                        </span>
+                    @endif
                 </div>
+                <p class="text-[13px] text-on-surface-variant/60 mt-1">
+                    {{ $jobApplication->company?->name ?? 'No company' }}
+                    @if ($jobApplication->location_city)
+                        <span class="mx-1">&middot;</span> {{ $jobApplication->location_city }}
+                    @endif
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <a href="{{ route('job-applications.edit', $jobApplication) }}" class="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-lg text-[13px] font-medium hover:bg-surface-container transition-all flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">edit</span>
+                Edit
+            </a>
+            <div x-data="{ open: false }">
+                <button @click="open = true" class="px-3 py-1.5 border border-outline-variant text-error rounded-lg text-[13px] font-medium hover:bg-error/5 transition-all flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">archive</span>
+                    Archive
+                </button>
+                <x-confirm-action-modal name="archive" title="Archive Application?" message="This will move the application to the archive. You can restore it later." :action="route('job-applications.archive', $jobApplication)" method="delete" button="Archive" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white border border-outline-variant/50 rounded-xl p-4 hover:shadow-md hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+                </div>
+                <span class="text-[11px] font-semibold text-on-surface-variant/70 uppercase tracking-wide">Applied</span>
+            </div>
+            <div class="text-[15px] font-bold text-on-surface">{{ $jobApplication->applied_at?->format('M d, Y') ?? 'Not set' }}</div>
+        </div>
+        <div class="bg-white border border-outline-variant/50 rounded-xl p-4 hover:shadow-md hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-[18px]">location_on</span>
+                </div>
+                <span class="text-[11px] font-semibold text-on-surface-variant/70 uppercase tracking-wide">Location</span>
+            </div>
+            <div class="text-[15px] font-bold text-on-surface truncate">{{ $jobApplication->location_city ?? ($jobApplication->location_type?->label() ?? 'Not set') }}</div>
+        </div>
+        @if ($jobApplication->salary_min || $jobApplication->salary_max)
+        <div class="bg-white border border-outline-variant/50 rounded-xl p-4 hover:shadow-md hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-lg bg-secondary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary text-[18px]">payments</span>
+                </div>
+                <span class="text-[11px] font-semibold text-on-surface-variant/70 uppercase tracking-wide">Salary</span>
+            </div>
+            <div class="text-[15px] font-bold text-on-surface">
+                {{ $jobApplication->salary_min ? number_format($jobApplication->salary_min) : '' }}{{ $jobApplication->salary_min && $jobApplication->salary_max ? ' - ' : '' }}{{ $jobApplication->salary_max ? number_format($jobApplication->salary_max) : '' }} {{ $jobApplication->currency }}
+            </div>
+        </div>
+        <div class="bg-white border border-outline-variant/50 rounded-xl p-4 hover:shadow-md hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-[18px]">work_outline</span>
+                </div>
+                <span class="text-[11px] font-semibold text-on-surface-variant/70 uppercase tracking-wide">Type</span>
+            </div>
+            <div class="text-[15px] font-bold text-on-surface">{{ $jobApplication->location_type?->label() ?? 'Not specified' }}</div>
+        </div>
+        @else
+        <div class="bg-white border border-outline-variant/50 rounded-xl p-4 hover:shadow-md hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-[18px]">work_outline</span>
+                </div>
+                <span class="text-[11px] font-semibold text-on-surface-variant/70 uppercase tracking-wide">Type</span>
+            </div>
+            <div class="text-[15px] font-bold text-on-surface">{{ $jobApplication->location_type?->label() ?? 'Not specified' }}</div>
+        </div>
+        <div class="bg-white border border-outline-variant/50 rounded-xl p-4 hover:shadow-md hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-lg {{ $pc['bg'] }} flex items-center justify-center">
+                    <span class="material-symbols-outlined {{ $pc['text'] }} text-[18px]">flag</span>
+                </div>
+                <span class="text-[11px] font-semibold text-on-surface-variant/70 uppercase tracking-wide">Priority</span>
+            </div>
+            <div class="text-[15px] font-bold text-on-surface">{{ ucfirst($jobApplication->priority) }}</div>
+        </div>
+        @endif
+    </div>
+
+    <!-- Two column layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- Left column -->
+        <div class="lg:col-span-2 space-y-5">
+
+            <!-- Progress -->
+            <section class="bg-white border border-outline-variant/50 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 border-b border-outline-variant/30">
+                    <h3 class="text-[14px] font-semibold text-on-surface">Application Progress</h3>
+                </div>
+                <div class="p-5">
+                    @php
+                        $statuses = [
+                            ['key' => 'applied', 'label' => 'Applied', 'icon' => 'description'],
+                            ['key' => 'in_review', 'label' => 'In Review', 'icon' => 'visibility'],
+                            ['key' => 'hr_interview', 'label' => 'HR Interview', 'icon' => 'group'],
+                            ['key' => 'technical_interview', 'label' => 'Technical Interview', 'icon' => 'code'],
+                            ['key' => 'final_interview', 'label' => 'Final Interview', 'icon' => 'verified'],
+                            ['key' => 'offer', 'label' => 'Offer', 'icon' => 'celebration'],
+                            ['key' => 'accepted', 'label' => 'Accepted', 'icon' => 'check_circle'],
+                            ['key' => 'rejected', 'label' => 'Rejected', 'icon' => 'cancel'],
+                            ['key' => 'ghosted', 'label' => 'Ghosted', 'icon' => 'person_off'],
+                        ];
+                        $statusKeys = ['applied', 'in_review', 'hr_interview', 'technical_interview', 'final_interview', 'offer', 'accepted', 'rejected', 'ghosted'];
+                        $currentKey = $jobApplication->status->value;
+                        $currentIndex = array_search($currentKey, $statusKeys);
+                        $isTerminal = in_array($currentKey, ['rejected', 'ghosted']);
+                    @endphp
+                    <div class="space-y-0">
+                        @foreach ($statuses as $index => $step)
+                            @php
+                                $isActive = $currentKey === $step['key'];
+                                $isPast = !$isActive && !$isTerminal && $index <= $currentIndex;
+                                $canUpdate = !$isActive;
+                            @endphp
+                            @if ($canUpdate)
+                                <form method="POST" action="{{ route('job-applications.updateStatus', $jobApplication) }}" class="group">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="{{ $step['key'] }}">
+                                    <button type="submit" class="w-full text-left flex items-center gap-4 cursor-pointer py-2.5 px-3 -mx-3 rounded-lg hover:bg-surface-container/50 transition-all">
+                            @else
+                                <div class="flex items-center gap-4 py-2.5">
+                            @endif
+                                <div class="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 {{ $isActive ? 'bg-primary/10 text-primary ring-2 ring-primary/30' : ($isPast ? 'bg-primary/5 text-primary' : 'bg-surface-container text-on-surface-variant/30') }} {{ $canUpdate ? 'group-hover:ring-2 group-hover:ring-primary/50' : '' }} flex-shrink-0">
+                                    @if ($isPast && !$isActive)
+                                        <span class="material-symbols-filled text-[16px]">check</span>
+                                    @else
+                                        <span class="material-symbols-outlined text-[16px]">{{ $step['icon'] }}</span>
+                                    @endif
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] font-medium transition-colors duration-200 {{ $isActive ? 'text-primary' : ($isPast ? 'text-on-surface' : 'text-on-surface-variant/40') }} {{ $canUpdate ? 'group-hover:text-primary' : '' }}">{{ $step['label'] }}</p>
+                                    @if ($isActive)
+                                        <p class="text-[11px] text-primary/70 font-medium mt-0.5">Current status</p>
+                                    @elseif ($canUpdate)
+                                        <p class="text-[11px] text-on-surface-variant/40 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">Click to update</p>
+                                    @endif
+                                </div>
+                            @if ($canUpdate)
+                                    </button>
+                                </form>
+                            @else
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notes -->
+            @if ($jobApplication->notes)
+                <section class="bg-white border border-outline-variant/50 rounded-xl overflow-hidden">
+                    <div class="px-4 py-3 border-b border-outline-variant/30">
+                        <h3 class="text-[14px] font-semibold text-on-surface">Notes</h3>
+                    </div>
+                    <div class="p-5">
+                        <p class="text-[14px] text-on-surface-variant/80 leading-relaxed whitespace-pre-line">{{ $jobApplication->notes }}</p>
+                    </div>
+                </section>
             @endif
 
-            <!-- Back + actions -->
-            <div class="flex items-center justify-between">
-                <a href="{{ route('job-applications.index') }}" class="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                    Back to Applications
-                </a>
-                <div class="flex items-center gap-2">
-                    <a href="{{ route('job-applications.edit', $jobApplication) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        Edit
-                    </a>
-                    <div x-data="{ open: false }">
-                        <button @click="open = true" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-xl transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            Archive
-                        </button>
-                        <x-confirm-action-modal name="archive" title="Archive Application?" message="This will move the application to the archive. You can restore it later." :action="route('job-applications.archive', $jobApplication)" method="delete" button="Archive" />
+            <!-- Activity Log -->
+            @if ($jobApplication->activities->isNotEmpty())
+                <section class="bg-white border border-outline-variant/50 rounded-xl overflow-hidden">
+                    <div class="px-4 py-3 border-b border-outline-variant/30">
+                        <h3 class="text-[14px] font-semibold text-on-surface">Activity Log</h3>
                     </div>
-                </div>
-            </div>
+                    <div class="divide-y divide-outline-variant/20">
+                        @foreach ($jobApplication->activities->sortByDesc('created_at')->take(10) as $log)
+                            <div class="px-4 py-3 flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center flex-shrink-0">
+                                    <span class="material-symbols-outlined text-on-surface-variant/50 text-[16px]">history</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] text-on-surface-variant/80">{{ $log->description ?? $log->action }}</p>
+                                    <p class="text-[11px] text-on-surface-variant/40 mt-0.5">{{ $log->created_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+        </div>
 
-            <!-- Hero header -->
-            <div class="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
-                <div class="relative flex items-start gap-5">
-                    <div class="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-2xl font-bold shadow-lg flex-shrink-0">
-                        {{ strtoupper(substr($jobApplication->company?->name ?? $jobApplication->job_title, 0, 1)) }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-3 flex-wrap">
-                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $jobApplication->job_title }}</h1>
-                            <x-status-badge :status="$jobApplication->status" size="lg" />
+        <!-- Right column -->
+        <div class="space-y-5">
+
+            <!-- Company -->
+            <div class="bg-white border border-outline-variant/50 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 border-b border-outline-variant/30 flex items-center justify-between">
+                    <h4 class="text-[13px] font-semibold text-on-surface">Company</h4>
+                    @if ($jobApplication->company)
+                        <a href="{{ route('companies.show', $jobApplication->company) }}" class="text-[11px] font-medium text-primary hover:underline">View &rarr;</a>
+                    @endif
+                </div>
+                @if ($jobApplication->company)
+                    @php $company = $jobApplication->company; @endphp
+                    <div class="p-4">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-container text-white text-sm font-bold flex-shrink-0">
+                                {{ strtoupper(substr($company->name, 0, 1)) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[14px] font-semibold text-on-surface truncate">{{ $company->name }}</p>
+                                @if ($company->industry)
+                                    <p class="text-[11px] text-on-surface-variant/60 truncate">{{ $company->industry }}</p>
+                                @endif
+                            </div>
                         </div>
-                        <p class="text-gray-500 dark:text-gray-400 mt-1">
-                            {{ $jobApplication->company?->name ?? 'No company' }}
-                            @if ($jobApplication->location_city)
-                                &middot; {{ $jobApplication->location_city }}
+                        <div class="space-y-2">
+                            @if ($company->location)
+                                <div class="flex items-center gap-2 text-[12px] text-on-surface-variant/70">
+                                    <span class="material-symbols-outlined text-[14px] text-on-surface-variant/40">location_on</span>
+                                    <span>{{ $company->location }}</span>
+                                </div>
                             @endif
-                        </p>
-                        @php $priorityLabels = ['low' => 'Low', 'normal' => 'Normal', 'high' => 'High']; $priorityColors = ['low' => 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300', 'normal' => 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300', 'high' => 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300']; @endphp
-                        <span class="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-medium {{ $priorityColors[$jobApplication->priority] ?? $priorityColors['normal'] }}">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
-                            {{ $priorityLabels[$jobApplication->priority] ?? 'Normal' }} Priority
-                        </span>
-                        @if ($jobApplication->salary_min || $jobApplication->salary_max)
-                            <span class="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 ml-2">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                {{ number_format($jobApplication->salary_min) }} - {{ number_format($jobApplication->salary_max) }} {{ $jobApplication->currency }}
-                            </span>
+                            @if ($company->website)
+                                <div class="flex items-center gap-2 text-[12px]">
+                                    <span class="material-symbols-outlined text-[14px] text-on-surface-variant/40">language</span>
+                                    <a href="{{ $company->website }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline truncate">{{ parse_url($company->website, PHP_URL_HOST) ?: $company->website }}</a>
+                                </div>
+                            @endif
+                            <div class="flex items-center gap-2 text-[12px] text-on-surface-variant/70">
+                                <span class="material-symbols-outlined text-[14px] text-on-surface-variant/40">work</span>
+                                <span>{{ $company->jobApplications->count() }} application{{ $company->jobApplications->count() !== 1 ? 's' : '' }}</span>
+                            </div>
+                        </div>
+                        @if ($company->tags->isNotEmpty())
+                            <div class="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-outline-variant/20">
+                                @foreach ($company->tags as $tag)
+                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full" style="background-color: {{ $tag->color ?? '#0891b2' }}15; color: {{ $tag->color ?? '#0891b2' }}">
+                                        {{ $tag->name }}
+                                    </span>
+                                @endforeach
+                            </div>
                         @endif
                     </div>
-                </div>
-            </div>
-
-            <!-- Quick stat cards -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Applied</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white mt-1">{{ $jobApplication->applied_at?->format('M d, Y') ?? 'Not set' }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white mt-1">{{ $jobApplication->location_city ?? ($jobApplication->location_type?->label() ?? 'Not set') }}</p>
-                </div>
-                @if ($jobApplication->salary_min || $jobApplication->salary_max)
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Salary Min</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white mt-1">{{ number_format($jobApplication->salary_min) }} {{ $jobApplication->currency }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Salary Max</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white mt-1">{{ number_format($jobApplication->salary_max) }} {{ $jobApplication->currency }}</p>
-                </div>
                 @else
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location Type</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white mt-1">{{ $jobApplication->location_type?->label() ?? 'Not specified' }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Priority</p>
-                    <p class="mt-1">@php $priorityClasses = ['low' => 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300', 'normal' => 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300', 'high' => 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300']; @endphp<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium capitalize {{ $priorityClasses[$jobApplication->priority] ?? $priorityClasses['normal'] }}">{{ $jobApplication->priority }}</span></p>
-                </div>
+                    <div class="flex flex-col items-center justify-center py-6 text-center">
+                        <span class="material-symbols-outlined text-on-surface-variant/30 text-[32px] mb-1">business</span>
+                        <p class="text-[12px] text-on-surface-variant/50 mb-3">No company linked</p>
+                        <a href="{{ route('job-applications.edit', $jobApplication) }}" class="px-3 py-1.5 bg-primary text-white rounded-lg text-[12px] font-medium hover:bg-primary/90 transition-all inline-flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">add</span>
+                            Link Company
+                        </a>
+                    </div>
                 @endif
             </div>
 
-            <!-- Two column layout for main content -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                <!-- Left column: Progress + Notes -->
-                <div class="lg:col-span-2 space-y-6">
-
-                    <!-- Progress timeline -->
-                    <x-section-card title="Application Progress" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>'>
-                        <div class="space-y-0">
-                            @php
-                                $statuses = [
-                                    ['key' => 'applied', 'label' => 'Applied', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'],
-                                    ['key' => 'in_review', 'label' => 'In Review', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>'],
-                                    ['key' => 'hr_interview', 'label' => 'HR Interview', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>'],
-                                    ['key' => 'technical_interview', 'label' => 'Technical Interview', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>'],
-                                    ['key' => 'final_interview', 'label' => 'Final Interview', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>'],
-                                    ['key' => 'offer', 'label' => 'Offer', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
-                                    ['key' => 'accepted', 'label' => 'Accepted', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
-                                    ['key' => 'rejected', 'label' => 'Rejected', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
-                                    ['key' => 'ghosted', 'label' => 'Ghosted', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>'],
-                                ];
-                                $statusKeys = ['applied', 'in_review', 'hr_interview', 'technical_interview', 'final_interview', 'offer', 'accepted', 'rejected', 'ghosted'];
-                                $currentKey = $jobApplication->status->value;
-                                $currentIndex = array_search($currentKey, $statusKeys);
-                                $isTerminal = in_array($currentKey, ['rejected', 'ghosted']);
-                            @endphp
-                            @foreach ($statuses as $index => $step)
-                                @php
-                                    $isActive = $currentKey === $step['key'];
-                                    $isPast = !$isActive && !$isTerminal && $index <= $currentIndex;
-                                    $canUpdate = !$isActive;
-                                @endphp
-                                @if ($canUpdate)
-                                    <form method="POST" action="{{ route('job-applications.updateStatus', $jobApplication) }}" class="group">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="status" value="{{ $step['key'] }}">
-                                        <button type="submit" class="w-full text-left flex items-start gap-4 cursor-pointer">
-                                @else
-                                    <div class="flex items-start gap-4">
-                                @endif
-                                    <div class="flex flex-col items-center">
-                                        <div class="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 {{ $isActive ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/30' : ($isPast ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-400') }} {{ $canUpdate ? 'group-hover:ring-2 group-hover:ring-emerald-400/50 group-hover:scale-110' : '' }}">
-                                            @if ($isPast && !$isActive)
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                            @else
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $step['icon'] !!}</svg>
-                                            @endif
-                                        </div>
-                                        @if (!$loop->last)
-                                            <div class="w-px h-8 transition-colors duration-200 {{ $isPast ? 'bg-emerald-300 dark:bg-emerald-600' : 'bg-gray-200 dark:bg-gray-700' }}"></div>
-                                        @endif
-                                    </div>
-                                    <div class="pb-6 flex-1">
-                                        <p class="text-sm font-semibold transition-colors duration-200 {{ $isActive ? 'text-emerald-600 dark:text-emerald-400' : ($isPast ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500') }} {{ $canUpdate ? 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400' : '' }}">{{ $step['label'] }}</p>
-                                        @if ($isActive)
-                                            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">Current status</p>
-                                        @elseif ($canUpdate)
-                                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">Click to update</p>
-                                        @endif
-                                    </div>
-                                @if ($canUpdate)
-                                        </button>
-                                    </form>
-                                @else
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                    </x-section-card>
-
-                    <!-- Notes -->
-                    @if ($jobApplication->notes)
-                        <x-section-card title="Notes" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>'>
-                            <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ $jobApplication->notes }}</p>
-                        </x-section-card>
-                    @endif
-
-                    @if ($jobApplication->activities->isNotEmpty())
-                        <x-section-card title="Activity Log" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>'>
-                            <div class="space-y-3">
-                                @foreach ($jobApplication->activities->sortByDesc('created_at')->take(10) as $log)
-                                    <div class="flex items-start gap-3 text-sm">
-                                        <div class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 flex-shrink-0 mt-0.5">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-700 dark:text-gray-300">{{ $log->description ?? $log->action }}</p>
-                                            <p class="text-xs text-gray-400 dark:text-gray-500">{{ $log->created_at->diffForHumans() }}</p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </x-section-card>
-                    @endif
-
+            <!-- Contacts -->
+            @if ($jobApplication->company && $jobApplication->company->contacts->isNotEmpty())
+            <div class="bg-white border border-outline-variant/50 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 border-b border-outline-variant/30 flex items-center justify-between">
+                    <h4 class="text-[13px] font-semibold text-on-surface">Contacts</h4>
+                    <span class="bg-primary/10 text-primary text-[11px] font-medium px-2 py-0.5 rounded-full">{{ $jobApplication->company->contacts->count() }}</span>
                 </div>
+                <div class="divide-y divide-outline-variant/20">
+                    @foreach ($jobApplication->company->contacts as $contact)
+                        <a href="{{ route('contacts.show', $contact) }}" class="px-4 py-3 flex items-center gap-3 hover:bg-surface-container/50 transition-all group">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-container text-white text-xs font-semibold flex-shrink-0">
+                                {{ strtoupper(substr($contact->name, 0, 1)) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[13px] font-medium text-on-surface group-hover:text-primary transition-colors truncate">{{ $contact->name }}</p>
+                                @if ($contact->role || $contact->email)
+                                    <p class="text-[11px] text-on-surface-variant/50 truncate">{{ $contact->role ?? $contact->email }}</p>
+                                @endif
+                            </div>
+                            <span class="material-symbols-outlined text-outline-variant/50 group-hover:text-primary transition-colors text-[16px] flex-shrink-0">chevron_right</span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
 
-                <!-- Right sidebar: Company + Links + Interviews -->
-                <div class="space-y-6">
-
-                    <!-- Company card -->
-                    <x-section-card title="Company" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>'>
-                        @if ($jobApplication->company)
-                            <a href="{{ route('companies.show', $jobApplication->company) }}" class="flex items-center gap-3 p-3 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-sm font-bold">
-                                    {{ strtoupper(substr($jobApplication->company->name, 0, 1)) }}
+            <!-- Links -->
+            @if (!empty($jobApplication->links))
+                <div class="bg-white border border-outline-variant/50 rounded-xl overflow-hidden">
+                    <div class="px-4 py-3 border-b border-outline-variant/30">
+                        <h4 class="text-[13px] font-semibold text-on-surface">Links</h4>
+                    </div>
+                    <div class="divide-y divide-outline-variant/20">
+                        @if (!empty($jobApplication->links['job_posting']))
+                            <a href="{{ $jobApplication->links['job_posting'] }}" target="_blank" rel="noopener noreferrer" class="px-4 py-3 flex items-center gap-3 hover:bg-surface-container/50 transition-all group">
+                                <div class="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
+                                    <span class="material-symbols-outlined text-primary/60 group-hover:text-primary text-[16px]">open_in_new</span>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $jobApplication->company->name }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $jobApplication->company->industry ?? 'No industry' }}</p>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] font-medium text-on-surface group-hover:text-primary transition-colors">Job Posting</p>
+                                    <p class="text-[11px] text-on-surface-variant/40 truncate">{{ $jobApplication->links['job_posting'] }}</p>
                                 </div>
                             </a>
-                        @else
-                            <p class="text-sm text-gray-500 dark:text-gray-400">No company linked</p>
                         @endif
-                    </x-section-card>
+                        @if (!empty($jobApplication->links['company_website']))
+                            <a href="{{ $jobApplication->links['company_website'] }}" target="_blank" rel="noopener noreferrer" class="px-4 py-3 flex items-center gap-3 hover:bg-surface-container/50 transition-all group">
+                                <div class="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
+                                    <span class="material-symbols-outlined text-primary/60 group-hover:text-primary text-[16px]">language</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] font-medium text-on-surface group-hover:text-primary transition-colors">Company Website</p>
+                                    <p class="text-[11px] text-on-surface-variant/40 truncate">{{ $jobApplication->links['company_website'] }}</p>
+                                </div>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            @endif
 
-                    <!-- Links -->
-                    @if (!empty($jobApplication->links))
-                        <x-section-card title="Links" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>'>
-                            <div class="space-y-2">
-                                @if (!empty($jobApplication->links['job_posting']))
-                                    <a href="{{ $jobApplication->links['job_posting'] }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-2.5 -mx-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-                                        <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex-shrink-0">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0 0L10 14"/></svg>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Job Posting</p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $jobApplication->links['job_posting'] }}</p>
-                                        </div>
-                                        <svg class="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                                    </a>
-                                @endif
-                                @if (!empty($jobApplication->links['company_website']))
-                                    <a href="{{ $jobApplication->links['company_website'] }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-2.5 -mx-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-                                        <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex-shrink-0">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Company Website</p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $jobApplication->links['company_website'] }}</p>
-                                        </div>
-                                        <svg class="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                                    </a>
-                                @endif
-                            </div>
-                        </x-section-card>
-                    @endif
+            <!-- Interviews -->
+            <div class="bg-white border border-outline-variant/50 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 border-b border-outline-variant/30 flex justify-between items-center">
+                    <h4 class="text-[13px] font-semibold text-on-surface">Interviews</h4>
+                    <span class="bg-primary/10 text-primary text-[11px] font-medium px-2 py-0.5 rounded-full">{{ $jobApplication->interviews->count() }}</span>
+                </div>
+                @if ($jobApplication->interviews->isEmpty())
+                    <div class="flex flex-col items-center justify-center py-6 text-center">
+                        <span class="material-symbols-outlined text-on-surface-variant/30 text-[32px] mb-1">event</span>
+                        <p class="text-[12px] text-on-surface-variant/50 mb-2">No interviews yet</p>
+                        <a href="{{ route('interviews.create', ['job_application_id' => $jobApplication->id]) }}" class="px-3 py-1.5 bg-primary text-white rounded-lg text-[12px] font-medium hover:bg-primary/90 transition-all inline-flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">add</span>
+                            Add Interview
+                        </a>
+                    </div>
+                @else
+                    <div class="divide-y divide-outline-variant/20">
+                        @foreach ($jobApplication->interviews->sortByDesc('scheduled_at') as $interview)
+                            <a href="{{ route('interviews.show', $interview) }}" class="px-4 py-3 flex items-center gap-3 hover:bg-surface-container/50 transition-all group">
+                                <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
+                                    <span class="material-symbols-outlined text-on-surface-variant/50 group-hover:text-primary text-[16px] transition-colors">event</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] font-medium text-on-surface group-hover:text-primary transition-colors truncate">{{ $interview->type }}</p>
+                                    <p class="text-[11px] text-on-surface-variant/40 mt-0.5">{{ $interview->scheduled_at?->format('M d, Y g:i A') }}</p>
+                                    @if ($interview->result)
+                                        <p class="text-[11px] text-on-surface-variant/50 mt-0.5">{{ $interview->result }}</p>
+                                    @endif
+                                </div>
+                                <span class="material-symbols-outlined text-outline-variant/50 group-hover:text-primary transition-colors text-[16px] flex-shrink-0">chevron_right</span>
+                            </a>
+                        @endforeach
+                    </div>
+                    <div class="px-4 py-3 border-t border-outline-variant/20">
+                        <a href="{{ route('interviews.create', ['job_application_id' => $jobApplication->id]) }}" class="text-[12px] text-primary font-medium hover:underline inline-flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">add</span>
+                            Add Interview
+                        </a>
+                    </div>
+                @endif
+            </div>
 
-                    <!-- Interviews -->
-                    <x-section-card title="Interviews" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>'>
-                        <div class="space-y-2">
-                            @if ($jobApplication->interviews->isEmpty())
-                                <p class="text-sm text-gray-500 dark:text-gray-400">No interviews yet.</p>
-                            @else
-                                @foreach ($jobApplication->interviews->sortByDesc('scheduled_at') as $interview)
-                                    <a href="{{ route('interviews.edit', $interview) }}" class="flex items-center gap-3 p-3 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-                                        <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex-shrink-0">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{{ $interview->type }}</p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $interview->scheduled_at?->format('M d, Y g:i A') }}</p>
-                                            @if ($interview->result)
-                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Result: {{ $interview->result }}</p>
-                                            @endif
-                                        </div>
-                                        <svg class="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                    </a>
-                                @endforeach
-                            @endif
-                            <div class="pt-2">
-                                <a href="{{ route('interviews.create', ['job_application_id' => $jobApplication->id]) }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                    Add Interview
-                                </a>
-                            </div>
-                        </div>
-                    </x-section-card>
-
-                    <!-- Documents -->
-                    <x-section-card title="Documents" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>'>
-                        @if ($jobApplication->documents->isEmpty())
-                            <p class="text-sm text-gray-500 dark:text-gray-400">No documents uploaded.</p>
-                        @else
-                            <div class="space-y-2">
-                                @foreach ($jobApplication->documents as $doc)
-                                    <div class="flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-                                        <div class="flex items-center gap-2 min-w-0">
-                                            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                            <a href="{{ route('documents.download', $doc) }}" class="text-sm font-medium text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 truncate">{{ $doc->name }}</a>
-                                        </div>
-                                        <form method="POST" action="{{ route('documents.destroy', $doc) }}" onsubmit="return confirm('Delete this document?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="text-xs text-red-600 dark:text-red-400 hover:underline flex-shrink-0">Delete</button>
-                                        </form>
+            <!-- Documents -->
+            <div class="bg-white border border-outline-variant/50 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 border-b border-outline-variant/30">
+                    <h4 class="text-[13px] font-semibold text-on-surface">Documents</h4>
+                </div>
+                @if ($jobApplication->documents->isEmpty())
+                    <div class="flex flex-col items-center justify-center py-4 text-center">
+                        <span class="material-symbols-outlined text-on-surface-variant/30 text-[32px] mb-1">folder_open</span>
+                        <p class="text-[12px] text-on-surface-variant/50">No documents yet</p>
+                    </div>
+                @else
+                    <div class="divide-y divide-outline-variant/20">
+                        @foreach ($jobApplication->documents as $doc)
+                            <div class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center flex-shrink-0">
+                                        <span class="material-symbols-outlined text-on-surface-variant/50 text-[16px]">description</span>
                                     </div>
-                                @endforeach
+                                    <a href="{{ route('documents.download', $doc) }}" class="text-[13px] font-medium text-on-surface hover:text-primary truncate">{{ $doc->name }}</a>
+                                </div>
+                                <form method="POST" action="{{ route('documents.destroy', $doc) }}" onsubmit="return confirm('Delete this document?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-[11px] text-error font-medium hover:underline">Delete</button>
+                                </form>
                             </div>
-                        @endif
-                        <div class="pt-3 mt-2 border-t border-gray-100 dark:border-gray-700">
-                            <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" class="flex items-center gap-2">
-                                @csrf
-                                <input type="hidden" name="documentable_type" value="App\Models\JobApplication">
-                                <input type="hidden" name="documentable_id" value="{{ $jobApplication->id }}">
-                                <input type="file" name="file" class="block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-emerald-50 dark:file:bg-emerald-500/10 file:text-emerald-600 dark:file:text-emerald-400 hover:file:bg-emerald-100 dark:hover:file:bg-emerald-500/20 transition-colors">
-                                <button type="submit" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline flex-shrink-0">Upload</button>
-                            </form>
-                        </div>
-                    </x-section-card>
-
+                        @endforeach
+                    </div>
+                @endif
+                <div class="px-4 py-3 border-t border-outline-variant/20">
+                    <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" class="flex items-center gap-2">
+                        @csrf
+                        <input type="hidden" name="documentable_type" value="App\Models\JobApplication">
+                        <input type="hidden" name="documentable_id" value="{{ $jobApplication->id }}">
+                        <input type="file" name="file" class="block w-full text-[12px] text-on-surface-variant/60 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors">
+                        <button type="submit" class="text-[12px] text-primary font-medium hover:underline flex-shrink-0">Upload</button>
+                    </form>
                 </div>
             </div>
 

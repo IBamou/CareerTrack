@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArchivesController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
@@ -20,9 +21,17 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Route::post('/dashboard/quick-add', [DashboardController::class, 'quickAdd'])
+    ->middleware(['auth'])
+    ->name('dashboard.quick-add');
+
 Route::get('/search', [SearchController::class, 'index'])
     ->middleware(['auth'])
     ->name('search');
+
+Route::get('/archives', [ArchivesController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('archives.index');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

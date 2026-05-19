@@ -10,8 +10,8 @@ class TagController extends Controller
 {
     public function index()
     {
-        $tags = Tag::where('user_id', Auth::id())->orderBy('name')->get();
-        return response()->json($tags);
+        $tags = Tag::withCount(['jobApplications', 'companies', 'contacts'])->where('user_id', Auth::id())->orderBy('name')->get();
+        return view('tag.index', compact('tags'));
     }
 
     public function store(StoreTagRequest $request)

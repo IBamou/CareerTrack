@@ -18,29 +18,6 @@ class JobApplicationController extends Controller
     {
         $userId = Auth::id();
 
-        if ($request->filled('bulk_action') && $request->filled('selected_ids')) {
-            $ids = $request->selected_ids;
-            $applications = JobApplication::whereIn('id', $ids)
-                ->where('applied_by', $userId)
-                ->get();
-
-            if ($request->bulk_action === 'archive') {
-                foreach ($applications as $app) {
-                    if (Auth::user()->can('archive', $app)) {
-                        $app->delete();
-                    }
-                }
-            } elseif ($request->bulk_action === 'updateStatus' && $request->filled('status')) {
-                foreach ($applications as $app) {
-                    if (Auth::user()->can('update', $app)) {
-                        $app->update(['status' => $request->status]);
-                    }
-                }
-            }
-
-            return redirect()->route('job-applications.index');
-        }
-
         $jobApplications = JobApplication::with('company')
             ->where('applied_by', $userId)
             ->when($request->filled('status'), function ($q) use ($request) {

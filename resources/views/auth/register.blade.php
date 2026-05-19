@@ -46,7 +46,7 @@
 
         <p class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             Already have an account?
-            <a href="{{ route('login') }}" class="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Sign in</a>
+            <a href="{{ route('login') }}" class="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">Sign in</a>
         </p>
     </form>
 </x-guest-layout>
