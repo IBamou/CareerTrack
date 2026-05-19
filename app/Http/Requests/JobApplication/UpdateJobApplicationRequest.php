@@ -31,6 +31,12 @@ class UpdateJobApplicationRequest extends FormRequest
             'links' => 'nullable|array',
             'links.*' => 'nullable|url:http,https',
             'notes' => 'nullable|string',
+            'salary_min' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'salary_max' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'currency' => ['sometimes', 'nullable', 'string', 'max:3'],
+            'benefits' => ['sometimes', 'nullable', 'string'],
+            'tags' => ['sometimes', 'nullable', 'array'],
+            'tags.*' => ['exists:tags,id'],
         ];
     }
 

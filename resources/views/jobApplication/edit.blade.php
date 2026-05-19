@@ -90,6 +90,58 @@
                     <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                 </x-section-card>
 
+                <x-section-card title="Salary" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <x-input-label for="salary_min" value="Salary Min" />
+                            <x-text-input id="salary_min" name="salary_min" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('salary_min', $jobApplication->salary_min)" placeholder="e.g. 50000" />
+                            <x-input-error :messages="$errors->get('salary_min')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="salary_max" value="Salary Max" />
+                            <x-text-input id="salary_max" name="salary_max" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('salary_max', $jobApplication->salary_max)" placeholder="e.g. 120000" />
+                            <x-input-error :messages="$errors->get('salary_max')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="currency" value="Currency" />
+                            <select id="currency" name="currency" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">
+                                <option value="">Select...</option>
+                                <option value="USD" {{ old('currency', $jobApplication->currency) === 'USD' ? 'selected' : '' }}>USD</option>
+                                <option value="EUR" {{ old('currency', $jobApplication->currency) === 'EUR' ? 'selected' : '' }}>EUR</option>
+                                <option value="GBP" {{ old('currency', $jobApplication->currency) === 'GBP' ? 'selected' : '' }}>GBP</option>
+                                <option value="MAD" {{ old('currency', $jobApplication->currency) === 'MAD' ? 'selected' : '' }}>MAD</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('currency')" class="mt-2" />
+                        </div>
+                        <div class="sm:col-span-2">
+                            <x-input-label for="benefits" value="Benefits" />
+                            <textarea id="benefits" name="benefits" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm" placeholder="e.g. Health insurance, 401k, remote allowance...">{{ old('benefits', $jobApplication->benefits) }}</textarea>
+                            <x-input-error :messages="$errors->get('benefits')" class="mt-2" />
+                        </div>
+                    </div>
+                </x-section-card>
+
+                <x-section-card title="Tags" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>'>
+                    @php $selectedTagIds = old('tags', $jobApplication->tags->pluck('id')->toArray()); @endphp
+                    <div x-data="{ selectedTags: {{ json_encode($selectedTagIds) }} }">
+                        <input type="hidden" name="tags" :value="selectedTags.length ? JSON.stringify(selectedTags) : ''">
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="tag in {{ json_encode($tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color])->values()) }}" :key="tag.id">
+                                <button type="button" @click="selectedTags.includes(tag.id) ? selectedTags = selectedTags.filter(t => t !== tag.id) : selectedTags.push(tag.id)"
+                                    :class="selectedTags.includes(tag.id) ? 'ring-2 ring-offset-1 ring-emerald-500 dark:ring-offset-gray-800' : 'opacity-70 hover:opacity-100'"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150">
+                                    <span :style="'background-color: ' + tag.color" class="w-2 h-2 rounded-full"></span>
+                                    <span x-text="tag.name"></span>
+                                </button>
+                            </template>
+                        </div>
+                        @if($tags->isEmpty())
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">No tags created yet. <a href="{{ route('tags.index') }}" class="text-emerald-600 dark:text-emerald-400 hover:underline">Manage tags</a></p>
+                        @endif
+                        <x-input-error :messages="$errors->get('tags')" class="mt-2" />
+                    </div>
+                </x-section-card>
+
                 <div class="flex gap-3 justify-end">
                     <a href="{{ route('job-applications.show', $jobApplication) }}" class="inline-flex items-center px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl font-medium text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         Cancel

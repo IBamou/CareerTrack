@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Contact;
 use App\Models\JobApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,14 +13,16 @@ class SearchController extends Controller
     public function index(Request $request)
     {
         $query = $request->query('q', '');
-        $type = in_array($request->query('type', 'all'), ['all', 'applications', 'companies']) ? $request->query('type', 'all') : 'all';
+        $type = in_array($request->query('type', 'all'), ['all', 'applications', 'companies', 'contacts']) ? $request->query('type', 'all') : 'all';
 
         $userId = Auth::id();
 
         $applications = collect();
         $companies = collect();
+        $contacts = collect();
         $appCount = 0;
         $companyCount = 0;
+        $contactCount = 0;
 
         if (empty($query)) {
             return view('search.index', [
@@ -27,9 +30,11 @@ class SearchController extends Controller
                 'type' => $type,
                 'applications' => $applications,
                 'companies' => $companies,
+                'contacts' => $contacts,
                 'totalResults' => 0,
                 'appCount' => 0,
                 'companyCount' => 0,
+                'contactCount' => 0,
             ]);
         }
 
@@ -45,6 +50,14 @@ class SearchController extends Controller
                 $q->where('name', 'like', "%{$query}%")
                     ->orWhere('industry', 'like', "%{$query}%")
                     ->orWhere('location', 'like', "%{$query}%")
+                    ->orWhere('notes', 'like', "%{$query}%");
+            })->count();
+
+        $contactCount = Contact::where('user_id', $userId)
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('role', 'like', "%{$query}%")
+                    ->orWhere('email', 'like', "%{$query}%")
                     ->orWhere('notes', 'like', "%{$query}%");
             })->count();
 
@@ -74,8 +87,22 @@ class SearchController extends Controller
                 ->withQueryString();
         }
 
-        $totalResults = $appCount + $companyCount;
+        if ($type === 'all' || $type === 'contacts') {
+            $contacts = Contact::with('company')
+                ->where('user_id', $userId)
+                ->where(function ($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
+                        ->orWhere('role', 'like', "%{$query}%")
+                        ->orWhere('email', 'like', "%{$query}%")
+                        ->orWhere('notes', 'like', "%{$query}%");
+                })
+                ->latest()
+                ->paginate(20)
+                ->withQueryString();
+        }
 
-        return view('search.index', compact('query', 'type', 'applications', 'companies', 'totalResults', 'appCount', 'companyCount'));
+        $totalResults = $appCount + $companyCount + $contactCount;
+
+        return view('search.index', compact('query', 'type', 'applications', 'companies', 'contacts', 'totalResults', 'appCount', 'companyCount', 'contactCount'));
     }
 }

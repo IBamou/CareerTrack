@@ -22,6 +22,9 @@
                 <a href="{{ route('search', ['q' => $query, 'type' => 'companies']) }}" class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors {{ $type === 'companies' ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg' }}">
                     Companies ({{ $companyCount }})
                 </a>
+                <a href="{{ route('search', ['q' => $query, 'type' => 'contacts']) }}" class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors {{ $type === 'contacts' ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg' }}">
+                    Contacts ({{ $contactCount }})
+                </a>
             </div>
 
             @if ($totalResults === 0)
@@ -85,6 +88,35 @@
                 @if ($companies instanceof \Illuminate\Pagination\LengthAwarePaginator)
                 <div class="mt-4">
                     {{ $companies->links() }}
+                </div>
+                @endif
+            </section>
+            @endif
+
+            @if (($type === 'all' || $type === 'contacts') && $contacts->isNotEmpty())
+            <section class="mb-8">
+                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    Contacts
+                </h3>
+                <div class="space-y-2">
+                    @foreach ($contacts as $contact)
+                    <a href="{{ route('contacts.show', $contact) }}" class="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-sm transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-xs font-semibold flex-shrink-0">
+                                {{ strtoupper(substr($contact->name, 0, 1)) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $contact->name }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $contact->role ?? 'No role' }} @if ($contact->company) &middot; {{ $contact->company->name }} @endif</p>
+                            </div>
+                        </div>
+                    </a>
+                    @endforeach
+                </div>
+                @if ($contacts instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                <div class="mt-4">
+                    {{ $contacts->links() }}
                 </div>
                 @endif
             </section>

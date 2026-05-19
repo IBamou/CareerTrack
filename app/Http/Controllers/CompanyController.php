@@ -48,7 +48,7 @@ class CompanyController extends Controller
     {
         $this->authorize('view', $company);
 
-        $company->loadCount('jobApplications');
+        $company->loadCount('jobApplications')->load(['contacts', 'documents']);
         $jobApplications = $company->jobApplications()
             ->with('company')
             ->latest()

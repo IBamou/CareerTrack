@@ -79,6 +79,67 @@
                     </div>
                 </x-section-card>
             @endif
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Contacts -->
+                <x-section-card title="Contacts" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>'>
+                    @if ($company->contacts->isEmpty())
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No contacts yet.</p>
+                    @else
+                        <div class="space-y-2">
+                            @foreach ($company->contacts as $contact)
+                                <a href="{{ route('contacts.show', $contact) }}" class="flex items-center gap-3 p-3 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-semibold flex-shrink-0">
+                                        {{ strtoupper(substr($contact->name, 0, 1)) }}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{{ $contact->name }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $contact->role ?? 'No role' }} @if ($contact->email) &middot; {{ $contact->email }} @endif</p>
+                                    </div>
+                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
+                    <div class="pt-3 mt-2 border-t border-gray-100 dark:border-gray-700">
+                        <a href="{{ route('contacts.create') }}?company_id={{ $company->id }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Add Contact
+                        </a>
+                    </div>
+                </x-section-card>
+
+                <!-- Documents -->
+                <x-section-card title="Documents" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>'>
+                    @if ($company->documents->isEmpty())
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No documents uploaded.</p>
+                    @else
+                        <div class="space-y-2">
+                            @foreach ($company->documents as $doc)
+                                <div class="flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        <a href="{{ route('documents.download', $doc) }}" class="text-sm font-medium text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 truncate">{{ $doc->name }}</a>
+                                    </div>
+                                    <form method="POST" action="{{ route('documents.destroy', $doc) }}" onsubmit="return confirm('Delete this document?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-xs text-red-600 dark:text-red-400 hover:underline flex-shrink-0">Delete</button>
+                                    </form>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <div class="pt-3 mt-2 border-t border-gray-100 dark:border-gray-700">
+                        <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" class="flex items-center gap-2">
+                            @csrf
+                            <input type="hidden" name="documentable_type" value="App\Models\Company">
+                            <input type="hidden" name="documentable_id" value="{{ $company->id }}">
+                            <input type="file" name="file" class="block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-emerald-50 dark:file:bg-emerald-500/10 file:text-emerald-600 dark:file:text-emerald-400 hover:file:bg-emerald-100 dark:hover:file:bg-emerald-500/20 transition-colors">
+                            <button type="submit" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline flex-shrink-0">Upload</button>
+                        </form>
+                    </div>
+                </x-section-card>
+            </div>
         </div>
     </div>
 </x-app-layout>

@@ -50,6 +50,67 @@
                     </div>
                 @endif
             </x-section-card>
+
+            @if (isset($monthly) && $monthly->isNotEmpty())
+            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Applications per Month</h3>
+                <div class="flex items-end gap-2 h-40">
+                    @php $max = $monthly->max('count'); @endphp
+                    @foreach ($monthly as $m)
+                        <div class="flex-1 flex flex-col items-center gap-1">
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ $m->count }}</span>
+                            <div class="w-full rounded-t-lg bg-emerald-500 transition-all duration-300 hover:bg-emerald-600" style="height: {{ $max > 0 ? ($m->count / $max) * 100 : 0 }}%"></div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ \Carbon\Carbon::create()->month($m->month)->format('M') }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            @if (isset($statusDistribution) && $statusDistribution->isNotEmpty())
+            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Distribution</h3>
+                <div class="space-y-3">
+                    @php $total = $statusDistribution->sum(); @endphp
+                    @foreach ($statusDistribution as $status => $count)
+                        @php $pct = $total > 0 ? round(($count / $total) * 100) : 0; @endphp
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-700 dark:text-gray-300">{{ ucwords(str_replace('_', ' ', $status)) }}</span>
+                                <span class="text-gray-500 dark:text-gray-400">{{ $count }} ({{ $pct }}%)</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="bg-emerald-500 rounded-full h-2 transition-all" style="width: {{ $pct }}%"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            @if (isset($upcomingReminders) && $upcomingReminders->isNotEmpty())
+            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Reminders</h3>
+                    <a href="{{ route('reminders.index') }}" class="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline">View all</a>
+                </div>
+                <div class="space-y-3">
+                    @foreach ($upcomingReminders as $reminder)
+                        <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $reminder->title }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $reminder->remind_at->format('M d, Y g:i A') }}</p>
+                            </div>
+                            <form method="POST" action="{{ route('reminders.complete', $reminder) }}">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline">Done</button>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

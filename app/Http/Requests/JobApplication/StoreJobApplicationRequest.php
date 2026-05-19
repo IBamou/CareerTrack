@@ -31,6 +31,12 @@ class StoreJobApplicationRequest extends FormRequest
             'links' => 'nullable|array',
             'links.*' => 'nullable|url:http,https',
             'notes' => 'nullable|string',
+            'salary_min' => ['nullable', 'numeric', 'min:0'],
+            'salary_max' => ['nullable', 'numeric', 'min:0'],
+            'currency' => ['nullable', 'string', 'max:3'],
+            'benefits' => ['nullable', 'string'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['exists:tags,id'],
         ];
     }
 
