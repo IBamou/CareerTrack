@@ -6,7 +6,6 @@ use App\Enums\JobApplicationStatus;
 use App\Models\Company;
 use App\Models\Interview;
 use App\Models\JobApplication;
-use App\Models\Reminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -47,14 +46,7 @@ class DashboardController extends Controller
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        $upcomingReminders = Reminder::where('user_id', $userId)
-            ->where('status', 'pending')
-            ->where('remind_at', '>=', now())
-            ->orderBy('remind_at')
-            ->limit(5)
-            ->get();
-
-        return view('dashboard', compact('stats', 'recentApplications', 'monthly', 'statusDistribution', 'upcomingReminders'));
+        return view('dashboard', compact('stats', 'recentApplications', 'monthly', 'statusDistribution'));
     }
 
     public function quickAdd(Request $request)

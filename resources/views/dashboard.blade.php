@@ -170,30 +170,6 @@
                 </div>
             </div>
             @endif
-
-            @if (isset($upcomingReminders) && $upcomingReminders->isNotEmpty())
-            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Reminders</h3>
-                    <a href="{{ route('reminders.index') }}" class="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline">View all</a>
-                </div>
-                <div class="space-y-3">
-                    @foreach ($upcomingReminders as $reminder)
-                        <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $reminder->title }}</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $reminder->remind_at->format('M d, Y g:i A') }}</p>
-                            </div>
-                            <form method="POST" action="{{ route('reminders.complete', $reminder) }}">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline">Done</button>
-                            </form>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 </x-app-layout>

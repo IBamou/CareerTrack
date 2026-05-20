@@ -1,8 +1,21 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use App\Models\Reminder;
+use App\Notifications\ReminderDue;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+Schedule::call(function () {
+    $reminders = Reminder::where('status', 'pending')
+        ->where('remind_at', '<=', now())
+        ->whereNull('reminded_at')
+        ->get();
+
+    foreach ($reminders as $reminder) {
+        $reminder->user->notify(new ReminderDue($reminder));
+
+        $reminder->update([
+            'status' => 'sent',
+            'reminded_at' => now(),
+        ]);
+    }
+})->name('send-due-reminders')->everyMinute();

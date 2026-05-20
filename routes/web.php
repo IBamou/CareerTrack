@@ -4,11 +4,12 @@ use App\Http\Controllers\ArchivesController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobApplicationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,17 @@ Route::get('/archives', [ArchivesController::class, 'index'])
     ->name('archives.index');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/mark-read', function ($id) {
+        $notification = auth()->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+        return response()->json(['success' => true]);
+    })->name('notifications.mark-read');
+
+    Route::post('/notifications/mark-all-read', function () {
+        auth()->user()->unreadNotifications->markAsRead();
+        return response()->json(['success' => true]);
+    })->name('notifications.mark-all-read');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -94,14 +106,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{interview}/forceDelete', 'forceDelete')->name('interviews.forceDelete')->withTrashed(true);
     });
 
-    Route::prefix('/reminders')->controller(ReminderController::class)->group(function () {
-        Route::get('/', 'index')->name('reminders.index');
-        Route::get('/create', 'create')->name('reminders.create');
-        Route::post('/store', 'store')->name('reminders.store');
-        Route::get('/{reminder}/edit', 'edit')->name('reminders.edit');
-        Route::put('/{reminder}/update', 'update')->name('reminders.update');
-        Route::delete('/{reminder}', 'destroy')->name('reminders.destroy');
-        Route::patch('/{reminder}/complete', 'complete')->name('reminders.complete');
+    Route::prefix('/calendar')->controller(CalendarController::class)->group(function () {
+        Route::get('/', 'index')->name('calendar.index');
+        Route::get('/events', 'events')->name('calendar.events');
+        Route::post('/reminders', 'storeReminder')->name('calendar.reminders.store');
+        Route::patch('/reminders/{reminder}/complete', 'completeReminder')->name('calendar.reminders.complete');
     });
 
     Route::prefix('/documents')->controller(DocumentController::class)->group(function () {
