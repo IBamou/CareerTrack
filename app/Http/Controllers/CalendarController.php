@@ -122,8 +122,6 @@ class CalendarController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'remind_at' => 'required|date',
-            'remindable_type' => 'nullable|string',
-            'remindable_id' => 'nullable|integer',
         ]);
 
         $reminder = Reminder::create([
@@ -131,12 +129,17 @@ class CalendarController extends Controller
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'remind_at' => $validated['remind_at'],
-            'remindable_type' => $validated['remindable_type'] ?? null,
-            'remindable_id' => $validated['remindable_id'] ?? null,
             'status' => 'pending',
         ]);
 
-        return response()->json(['success' => true, 'reminder' => $reminder]);
+        return response()->json([
+            'success' => true,
+            'reminder' => [
+                'id' => $reminder->id,
+                'title' => $reminder->title,
+                'description' => $reminder->description,
+            ],
+        ]);
     }
 
     public function completeReminder(Reminder $reminder)

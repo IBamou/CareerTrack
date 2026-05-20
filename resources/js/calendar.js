@@ -91,7 +91,7 @@ export default function (initialMonth, initialYear, initialEvents, todayStr) {
         completeReminder(event) {
             fetch(`/calendar/reminders/${event.id}/complete`, {
                 method: 'PATCH',
-                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '', 'Content-Type': 'application/json' },
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '', 'Content-Type': 'application/json', 'Accept': 'application/json' },
             }).then(r => {
                 if (r.ok) {
                     this.selectedDayEvents = this.selectedDayEvents.filter(e => !(e.id === event.id && e.type === 'reminder'));
@@ -105,13 +105,18 @@ export default function (initialMonth, initialYear, initialEvents, todayStr) {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
             fetch('/calendar/reminders', {
                 method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' },
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({
                     title: this.reminderForm.title,
                     description: this.reminderForm.description,
                     remind_at: remindAt,
                 }),
-            }).then(r => r.json()).then(data => {
+            }).then(r => {
+                if (!r.ok) {
+                    return r.json().then(err => { throw new Error(JSON.stringify(err)); });
+                }
+                return r.json();
+            }).then(data => {
                 if (data.success) {
                     this.selectedDayEvents.push({
                         id: data.reminder.id,
@@ -127,6 +132,8 @@ export default function (initialMonth, initialYear, initialEvents, todayStr) {
                     this.reminderForm = { title: '', description: '', time: '09:00' };
                     this._fetch();
                 }
+            }).catch(err => {
+                alert('Error saving reminder: ' + err.message);
             });
         },
     };
