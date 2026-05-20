@@ -1,7 +1,7 @@
 <?php
 
-use App\Jobs\SendReminderNotification;
 use App\Models\Reminder;
+use App\Notifications\ReminderDue;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::call(function () {
@@ -11,6 +11,11 @@ Schedule::call(function () {
         ->get();
 
     foreach ($reminders as $reminder) {
-        SendReminderNotification::dispatch($reminder);
+        $reminder->user->notify(new ReminderDue($reminder));
+
+        $reminder->update([
+            'status' => 'sent',
+            'reminded_at' => now(),
+        ]);
     }
 })->name('send-due-reminders')->everyMinute();
