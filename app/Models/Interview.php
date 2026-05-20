@@ -36,11 +36,6 @@ class Interview extends Model
         return $this->morphMany(Document::class, 'documentable');
     }
 
-    public function reminders(): MorphMany
-    {
-        return $this->morphMany(Reminder::class, 'remindable');
-    }
-
     public function activities(): MorphMany
     {
         return $this->morphMany(ActivityLog::class, 'loggable');

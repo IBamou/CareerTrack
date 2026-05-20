@@ -56,11 +56,6 @@ class User extends Authenticatable
         return $this->hasMany(Contact::class);
     }
 
-    public function reminders(): HasMany
-    {
-        return $this->hasMany(Reminder::class);
-    }
-
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
