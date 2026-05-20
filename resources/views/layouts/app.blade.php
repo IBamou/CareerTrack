@@ -80,9 +80,7 @@
                                 <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute right-0 mt-2 w-80 rounded-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 bg-white dark:bg-gray-800 overflow-hidden" style="display: none;">
                                     <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                                         <span class="text-sm font-semibold text-gray-900 dark:text-white">Notifications</span>
-                                        <template x-if="count > 0">
-                                            <button @click="fetch('/notifications/mark-all-read', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(() => { notifications = []; count = 0; })" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline">Mark all read</button>
-                                        </template>
+                                        <a href="{{ route('notifications.index') }}" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline">View all</a>
                                     </div>
                                     <div class="max-h-72 overflow-y-auto">
                                         <template x-if="notifications.length === 0">

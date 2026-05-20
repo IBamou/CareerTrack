@@ -8,6 +8,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobApplicationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TagController;
@@ -34,6 +35,7 @@ Route::get('/archives', [ArchivesController::class, 'index'])
     ->name('archives.index');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/mark-read', function ($id) {
         $notification = auth()->user()->notifications()->findOrFail($id);
         $notification->markAsRead();
