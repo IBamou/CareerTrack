@@ -2,8 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Reminder;
-use App\Notifications\ReminderDue;
+use App\Services\ReminderNotificationService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,18 +11,14 @@ class SendDueReminders
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $reminders = Reminder::where('status', 'pending')
-            ->where('remind_at', '<=', now())
-            ->whereNull('reminded_at')
-            ->get();
+        if (!$request->user()) {
+            return $next($request);
+        }
 
-        foreach ($reminders as $reminder) {
-            $reminder->user->notify(new ReminderDue($reminder));
-
-            $reminder->update([
-                'status' => 'sent',
-                'reminded_at' => now(),
-            ]);
+        try {
+            app(ReminderNotificationService::class)->sendDueReminders();
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         return $next($request);
