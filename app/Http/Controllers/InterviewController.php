@@ -6,16 +6,30 @@ use App\Http\Requests\Interview\StoreInterviewRequest;
 use App\Http\Requests\Interview\UpdateInterviewRequest;
 use App\Models\Interview;
 use App\Models\JobApplication;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class InterviewController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $interviews = Interview::with('jobApplication')
+        $interviews = Interview::with('jobApplication.company')
             ->where('user_id', Auth::id())
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $q->where(function ($query) use ($request) {
+                    $query->where('type', 'like', '%' . $request->q . '%')
+                        ->orWhere('notes', 'like', '%' . $request->q . '%')
+                        ->orWhereHas('jobApplication', function ($jq) use ($request) {
+                            $jq->where('job_title', 'like', '%' . $request->q . '%')
+                                ->orWhereHas('company', function ($cq) use ($request) {
+                                    $cq->where('name', 'like', '%' . $request->q . '%');
+                                });
+                        });
+                });
+            })
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('interview.index', compact('interviews'));
     }

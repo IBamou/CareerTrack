@@ -1,145 +1,201 @@
 <x-app-layout>
     <x-slot name="header">{{ $company->name }}</x-slot>
 
-    <div class="p-4 lg:p-6">
-        <div class="max-w-5xl mx-auto space-y-6">
+    <div class="max-w-5xl mx-auto space-y-6">
 
-            @if (session('status'))
-                <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                    {{ session('status') }}
+        @if (session('status'))
+            <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl text-sm font-medium text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                <i class="fas fa-check-circle text-emerald-500"></i>
+                {{ session('status') }}
+            </div>
+        @endif
+
+        <div class="flex items-center justify-between">
+            <a href="{{ route('companies.index') }}" class="inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <i class="fas fa-arrow-left text-xs"></i>
+                Back to Companies
+            </a>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('companies.edit', $company) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    <i class="fas fa-edit text-xs"></i>
+                    Edit
+                </a>
+                <div>
+                    <button type="button" @click="$dispatch('open-modal-archive')" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
+                        <i class="fas fa-archive text-xs"></i>
+                        Archive
+                    </button>
+                    <x-confirm-action-modal name="archive" title="Archive Company?" message="This will move the company to the archive. You can restore it later." :action="route('companies.archive', $company)" method="delete" button="Archive" />
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ $company->name }}</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    @if ($company->industry)
+                        {{ $company->industry }}
+                    @else
+                        <span class="italic">No industry specified</span>
+                    @endif
+                    @if ($company->location)
+                        &middot; {{ $company->location }}
+                    @endif
+                </p>
+            </div>
+        </div>
+
+        <x-section-card title="Details">
+            <dl class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100 dark:divide-slate-700 -mx-4">
+                <div class="px-4 text-center">
+                    <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center justify-center gap-1.5 mb-1">
+                        <i class="fas fa-globe"></i> Website
+                    </dt>
+                    <dd>
+                        @if ($company->website)
+                            <a href="{{ $company->website }}" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-[#2563eb] dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                                {{ parse_url($company->website, PHP_URL_HOST) ?: $company->website }}
+                            </a>
+                        @else
+                            <span class="text-sm text-slate-400 dark:text-slate-500 italic">No website provided</span>
+                        @endif
+                    </dd>
+                </div>
+                <div class="px-4 text-center">
+                    <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center justify-center gap-1.5 mb-1">
+                        <i class="fas fa-map-marker-alt"></i> Location
+                    </dt>
+                    <dd class="text-sm font-semibold text-slate-900 dark:text-white">
+                        @if ($company->location)
+                            {{ $company->location }}
+                        @else
+                            <span class="text-sm text-slate-400 dark:text-slate-500 italic">No location specified</span>
+                        @endif
+                    </dd>
+                </div>
+                <div class="px-4 text-center">
+                    <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center justify-center gap-1.5 mb-1">
+                        <i class="fas fa-building"></i> Industry
+                    </dt>
+                    <dd class="text-sm font-semibold text-slate-900 dark:text-white">
+                        @if ($company->industry)
+                            {{ $company->industry }}
+                        @else
+                            <span class="text-sm text-slate-400 dark:text-slate-500 italic">No industry specified</span>
+                        @endif
+                    </dd>
+                </div>
+                <div class="px-4 text-center">
+                    <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center justify-center gap-1.5 mb-1">
+                        <i class="fas fa-briefcase"></i> Applications
+                    </dt>
+                    <dd class="text-2xl font-bold text-slate-900 dark:text-white">{{ $company->job_applications_count ?? 0 }}</dd>
+                </div>
+            </dl>
+        </x-section-card>
+
+        <x-section-card title="Applications">
+            @if ($jobApplications->isNotEmpty())
+                <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                    @foreach ($jobApplications as $app)
+                        <a href="{{ route('job-applications.show', $app) }}" class="flex items-center gap-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 -mx-4 px-4 transition-colors">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-500/10 text-[#2563eb] dark:text-blue-400 text-xs font-semibold flex-shrink-0">
+                                {{ strtoupper(substr($app->job_title, 0, 1)) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ $app->job_title }}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ $app->created_at?->format('M d, Y') }}</p>
+                            </div>
+                            <x-status-badge :status="$app->status" size="sm" />
+                        </a>
+                    @endforeach
+                </div>
+            @else
+                <div class="flex flex-col items-center justify-center py-6 text-center">
+                    <i class="fas fa-briefcase text-3xl text-slate-300 dark:text-slate-600 mb-2"></i>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">No applications for this company yet</p>
+                    <a href="{{ route('job-applications.create') }}" class="mt-3 px-4 py-2 bg-[#2563eb] text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-1.5">
+                        <i class="fas fa-plus text-xs"></i>
+                        Add Application
+                    </a>
                 </div>
             @endif
+        </x-section-card>
 
-            <div class="flex items-center justify-between">
-                <a href="{{ route('companies.index') }}" class="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                    Back to Companies
-                </a>
-                <div class="flex items-center gap-2">
-                    <a href="{{ route('companies.edit', $company) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        Edit
-                    </a>
-                    <div x-data="{ open: false }">
-                        <button @click="open = true" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-xl transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            Archive
-                        </button>
-                        <x-confirm-action-modal name="archive" title="Archive Company?" message="This will move the company to the archive. You can restore it later." :action="route('companies.archive', $company)" method="delete" button="Archive" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <div class="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-xl font-bold">
-                    {{ strtoupper(substr($company->name, 0, 1)) }}
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ $company->name }}</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        {{ $company->industry ?? 'No industry' }}
-                        @if ($company->location)
-                            &middot; {{ $company->location }}
-                        @endif
-                    </p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <x-section-card title="Details" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'>
-                    <dl class="space-y-3">
-                        <div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Website</dt><dd class="mt-0.5">@if ($company->website)<a href="{{ $company->website }}" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">{{ parse_url($company->website, PHP_URL_HOST) }}</a>@else<span class="text-sm text-gray-500 dark:text-gray-400">Not provided</span>@endif</dd></div>
-                        <div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Location</dt><dd class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{{ $company->location ?? 'Not specified' }}</dd></div>
-                        <div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Applications</dt><dd class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{{ $company->job_applications_count ?? 0 }}</dd></div>
-                    </dl>
-                </x-section-card>
-
-                @if ($company->notes)
-                <x-section-card title="Notes" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>'>
-                    <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ $company->notes }}</p>
-                </x-section-card>
-                @endif
-            </div>
-
-            @if ($jobApplications->isNotEmpty())
-                <x-section-card title="Applications" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'>
-                    <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                        @foreach ($jobApplications as $app)
-                            <a href="{{ route('job-applications.show', $app) }}" class="flex items-center gap-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 -mx-4 px-4 transition-colors">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex-shrink-0">
-                                    {{ strtoupper(substr($app->job_title, 0, 1)) }}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <x-section-card title="Contacts">
+                @if ($company->contacts->isNotEmpty())
+                    <div class="space-y-2">
+                        @foreach ($company->contacts as $contact)
+                            <a href="{{ route('contacts.show', $contact) }}" class="flex items-center gap-3 p-3 -mx-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                                <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-[#2563eb] dark:text-blue-400 text-sm font-semibold flex-shrink-0">
+                                    {{ strtoupper(substr($contact->name, 0, 1)) }}
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ $app->job_title }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $app->created_at?->format('M d, Y') }}</p>
+                                    <p class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-[#2563eb] dark:group-hover:text-blue-400 transition-colors">{{ $contact->name }}</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ $contact->role ?? 'No role' }} @if ($contact->email) &middot; {{ $contact->email }} @endif</p>
                                 </div>
-                                <x-status-badge :status="$app->status" size="sm" />
+                                <i class="fas fa-chevron-right text-slate-400 group-hover:text-[#2563eb] transition-colors text-xs flex-shrink-0"></i>
                             </a>
                         @endforeach
                     </div>
-                </x-section-card>
-            @endif
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Contacts -->
-                <x-section-card title="Contacts" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>'>
-                    @if ($company->contacts->isEmpty())
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No contacts yet.</p>
-                    @else
-                        <div class="space-y-2">
-                            @foreach ($company->contacts as $contact)
-                                <a href="{{ route('contacts.show', $contact) }}" class="flex items-center gap-3 p-3 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-                                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-semibold flex-shrink-0">
-                                        {{ strtoupper(substr($contact->name, 0, 1)) }}
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{{ $contact->name }}</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $contact->role ?? 'No role' }} @if ($contact->email) &middot; {{ $contact->email }} @endif</p>
-                                    </div>
-                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
-                    <div class="pt-3 mt-2 border-t border-gray-100 dark:border-gray-700">
-                        <a href="{{ route('contacts.create') }}?company_id={{ $company->id }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            Add Contact
-                        </a>
+                @else
+                    <div class="flex flex-col items-center justify-center py-6 text-center">
+                        <i class="fas fa-user-friends text-3xl text-slate-300 dark:text-slate-600 mb-2"></i>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">No contacts yet</p>
                     </div>
-                </x-section-card>
+                @endif
+                <div class="pt-3 mt-2 border-t border-slate-100 dark:border-slate-700">
+                    <a href="{{ route('contacts.create') }}?company_id={{ $company->id }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-[#2563eb] dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                        <i class="fas fa-plus text-xs"></i>
+                        Add Contact
+                    </a>
+                </div>
+            </x-section-card>
 
-                <!-- Documents -->
-                <x-section-card title="Documents" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>'>
-                    @if ($company->documents->isEmpty())
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No documents uploaded.</p>
-                    @else
+            <x-section-card title="Documents" class="flex flex-col">
+                <div class="flex-1">
+                    @if ($company->documents->isNotEmpty())
                         <div class="space-y-2">
                             @foreach ($company->documents as $doc)
-                                <div class="flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                                <div class="flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
                                     <div class="flex items-center gap-2 min-w-0">
-                                        <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                        <a href="{{ route('documents.download', $doc) }}" class="text-sm font-medium text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 truncate">{{ $doc->name }}</a>
+                                        <i class="fas fa-file text-slate-400 flex-shrink-0"></i>
+                                        <a href="{{ route('documents.download', $doc) }}" class="text-sm font-medium text-slate-900 dark:text-white hover:text-[#2563eb] dark:hover:text-blue-400 truncate">{{ $doc->name }}</a>
                                     </div>
-                                    <form method="POST" action="{{ route('documents.destroy', $doc) }}" onsubmit="return confirm('Delete this document?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="text-xs text-red-600 dark:text-red-400 hover:underline flex-shrink-0">Delete</button>
-                                    </form>
+                                    <div>
+                                        <button type="button" @click="$dispatch('open-modal-delete_doc_{{ $doc->id }}')" class="text-xs text-red-500 hover:underline flex-shrink-0">Delete</button>
+                                        <x-confirm-action-modal name="delete-doc-{{ $doc->id }}" title="Delete Document?" message="Are you sure you want to delete this document?" :action="route('documents.destroy', $doc)" method="delete" button="Delete" />
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
+                    @else
+                        <div class="flex flex-col items-center justify-center py-6 text-center">
+                            <i class="fas fa-folder-open text-3xl text-slate-300 dark:text-slate-600 mb-2"></i>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">No documents uploaded</p>
+                        </div>
                     @endif
-                    <div class="pt-3 mt-2 border-t border-gray-100 dark:border-gray-700">
-                        <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" class="flex items-center gap-2">
-                            @csrf
-                            <input type="hidden" name="documentable_type" value="App\Models\Company">
-                            <input type="hidden" name="documentable_id" value="{{ $company->id }}">
-                            <input type="file" name="file" class="block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-emerald-50 dark:file:bg-emerald-500/10 file:text-emerald-600 dark:file:text-emerald-400 hover:file:bg-emerald-100 dark:hover:file:bg-emerald-500/20 transition-colors">
-                            <button type="submit" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline flex-shrink-0">Upload</button>
-                        </form>
-                    </div>
-                </x-section-card>
-            </div>
+                </div>
+                <div class="pt-3 mt-2 border-t border-slate-100 dark:border-slate-700">
+                    <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" class="flex items-center gap-2">
+                        @csrf
+                        <input type="hidden" name="documentable_type" value="App\Models\Company">
+                        <input type="hidden" name="documentable_id" value="{{ $company->id }}">
+                        <input type="file" name="file" class="block w-full text-xs text-slate-500 dark:text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-blue-50 dark:file:bg-blue-500/10 file:text-[#2563eb] dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-500/20 transition-colors cursor-pointer">
+                        <button type="submit" class="text-xs font-medium text-[#2563eb] dark:text-blue-400 hover:underline flex-shrink-0">Upload</button>
+                    </form>
+                </div>
+            </x-section-card>
         </div>
+
+        <x-section-card title="Notes">
+            @if ($company->notes)
+                <p class="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line">{{ $company->notes }}</p>
+            @else
+                <p class="text-sm text-slate-400 dark:text-slate-500 italic">No notes added</p>
+            @endif
+        </x-section-card>
     </div>
 </x-app-layout>

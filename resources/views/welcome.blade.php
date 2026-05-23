@@ -5,35 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'CareerTrack') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-white dark:bg-gray-950">
+<body class="font-sans antialiased bg-white dark:bg-slate-900">
     <div class="relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-emerald-950 opacity-70"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950 opacity-70"></div>
 
         <header class="relative z-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16 lg:h-20">
                     <div class="flex items-center gap-2">
-                        <svg class="w-7 h-7 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                        </svg>
-                        <span class="text-xl font-bold text-gray-900 dark:text-white">{{ config('app.name', 'CareerTrack') }}</span>
+                        <i class="fas fa-briefcase text-[#2563eb] dark:text-blue-400 text-xl"></i>
+                        <span class="text-xl font-bold text-slate-900 dark:text-white">{{ config('app.name', 'CareerTrack') }}</span>
                     </div>
 
                     @if (Route::has('login'))
                         <nav class="flex items-center gap-4">
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-lg font-semibold text-sm text-white hover:bg-emerald-700 transition-colors">
+                                <a href="{{ url('/dashboard') }}" class="inline-flex items-center px-4 py-2 bg-[#2563eb] border border-transparent rounded-lg font-semibold text-sm text-white hover:bg-blue-700 transition-colors">
                                     Dashboard
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                <a href="{{ route('login') }}" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                                     Log in
                                 </a>
                                 @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-lg font-semibold text-sm text-white hover:bg-emerald-700 transition-colors">
+                                    <a href="{{ route('register') }}" class="inline-flex items-center px-4 py-2 bg-[#2563eb] border border-transparent rounded-lg font-semibold text-sm text-white hover:bg-blue-700 transition-colors">
                                         Get started
                                     </a>
                                 @endif
@@ -47,28 +46,28 @@
         <main class="relative z-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 lg:pt-24 lg:pb-28">
                 <div class="text-center max-w-3xl mx-auto">
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                         Track your
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400">job applications</span>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2563eb] to-blue-400 dark:from-blue-400 dark:to-blue-300">job applications</span>
                         with ease
                     </h1>
-                    <p class="mt-6 text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                    <p class="mt-6 text-lg sm:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
                         Organize your job search in one place. Track applications, manage interviews,
                         follow up at the right time, and never lose sight of your opportunities.
                     </p>
 
                     <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="inline-flex items-center px-8 py-3.5 bg-emerald-600 border border-transparent rounded-xl font-semibold text-base text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/25 transition-all">
+                            <a href="{{ url('/dashboard') }}" class="inline-flex items-center px-8 py-3.5 bg-[#2563eb] border border-transparent rounded-xl font-semibold text-base text-white hover:bg-blue-700 shadow-lg shadow-blue-500/25 transition-all">
                                 Go to dashboard
-                                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                                <i class="fas fa-arrow-right ml-2 text-sm"></i>
                             </a>
                         @else
-                            <a href="{{ route('register') }}" class="inline-flex items-center px-8 py-3.5 bg-emerald-600 border border-transparent rounded-xl font-semibold text-base text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/25 transition-all">
+                            <a href="{{ route('register') }}" class="inline-flex items-center px-8 py-3.5 bg-[#2563eb] border border-transparent rounded-xl font-semibold text-base text-white hover:bg-blue-700 shadow-lg shadow-blue-500/25 transition-all">
                                 Start tracking free
-                                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                                <i class="fas fa-arrow-right ml-2 text-sm"></i>
                             </a>
-                            <a href="{{ route('login') }}" class="inline-flex items-center px-8 py-3.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl font-semibold text-base text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all">
+                            <a href="{{ route('login') }}" class="inline-flex items-center px-8 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-base text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm transition-all">
                                 Sign in
                             </a>
                         @endauth
@@ -76,37 +75,42 @@
                 </div>
 
                 <div class="mt-24 lg:mt-32 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                    <div class="relative p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                            </svg>
+                    <div class="relative p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-clipboard-list text-[#2563eb] dark:text-blue-400 text-lg"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Track applications</h3>
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Track applications</h3>
+                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                             Log every job you apply to with company details, links, and notes — all in one organized dashboard.
                         </p>
                     </div>
 
-                    <div class="relative p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 bg-teal-100 dark:bg-teal-900/50 rounded-xl flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
+                    <div class="relative p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-bar text-[#2563eb] dark:text-blue-400 text-lg"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Visual progress</h3>
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Visual progress</h3>
+                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                             See your application status at a glance with color-coded badges and a clear progress timeline.
                         </p>
                     </div>
 
+                    <div class="relative p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-calendar-check text-[#2563eb] dark:text-blue-400 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Manage interviews</h3>
+                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Keep track of interview schedules, follow-ups, and never miss an important date.
+                        </p>
+                    </div>
                 </div>
             </div>
         </main>
 
-        <footer class="relative z-10 border-t border-gray-200 dark:border-gray-800">
+        <footer class="relative z-10 border-t border-slate-200 dark:border-slate-800">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-center text-sm text-slate-500 dark:text-slate-400">
                     &copy; {{ date('Y') }} {{ config('app.name', 'CareerTrack') }}. All rights reserved.
                 </p>
             </div>

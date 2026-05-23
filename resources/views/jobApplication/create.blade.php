@@ -1,155 +1,202 @@
 <x-app-layout>
-    <x-slot name="header">New Application</x-slot>
+    <x-slot name="header">Add Application</x-slot>
 
-    <div class="p-4 lg:p-6">
-        <div class="max-w-3xl mx-auto space-y-6">
-            <form method="POST" action="{{ route('job-applications.store') }}" class="space-y-6">
-                @csrf
+    <div class="max-w-4xl mx-auto">
 
-                <x-section-card title="Position Details" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>'>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div class="sm:col-span-2">
-                            <x-input-label for="job_title" value="Job Title" />
-                            <x-text-input id="job_title" name="job_title" type="text" class="mt-1 block w-full" :value="old('job_title')" required placeholder="e.g. Senior Frontend Developer" />
-                            <x-input-error :messages="$errors->get('job_title')" class="mt-2" />
-                        </div>
+        @if ($errors->any())
+            <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl text-sm font-medium text-red-700 dark:text-red-300 flex items-center gap-2">
+                <i class="fas fa-exclamation-circle text-red-500"></i>
+                Please fix the errors below.
+            </div>
+        @endif
 
-                        <div class="sm:col-span-2">
-                            <x-input-label for="company" value="Company" />
+        <header class="flex-shrink-0 flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+                <a href="{{ route('job-applications.index') }}" class="w-9 h-9 border border-slate-200 dark:border-slate-600 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                    <i class="fas fa-arrow-left text-xs"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Add Application</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1">Track a new job opening in your pipeline.</p>
+                </div>
+            </div>
+        </header>
+
+        <form method="POST" action="{{ route('job-applications.store') }}" enctype="multipart/form-data" class="space-y-6">
+            @csrf
+
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-4">
+                <h2 class="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3 flex items-center gap-2">
+                    <i class="fas fa-briefcase text-[#2563eb]"></i> Role Information
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="job_title" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Job Title <span class="text-red-500">*</span></label>
+                        <input type="text" id="job_title" name="job_title" value="{{ old('job_title') }}" required placeholder="e.g. Backend Developer" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
+                        @error('job_title') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Company Name <span class="text-red-500">*</span></label>
+                        <div class="relative">
                             <x-company-combobox
                                 :companies="$companies"
                                 :selected-id="old('company_id')"
                                 :selected-name="old('company_id') ? $companies->firstWhere('id', old('company_id'))?->name : ''"
                                 :error="$errors->first('company_id') ?? $errors->first('new_company_name')"
                             />
-                        </div>
-
-                        <div>
-                            <x-input-label for="status" value="Status" />
-                            <select id="status" name="status" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">
-                                @foreach (\App\Enums\JobApplicationStatus::cases() as $s)
-                                    <option value="{{ $s->value }}" {{ old('status') === $s->value ? 'selected' : '' }}>{{ $s->label() }}</option>
-                                @endforeach
-                            </select>
-                            <x-input-error :messages="$errors->get('status')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="priority" value="Priority" />
-                            <select id="priority" name="priority" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">
-                                <option value="low" {{ old('priority', 'normal') === 'low' ? 'selected' : '' }}>Low</option>
-                                <option value="normal" {{ old('priority', 'normal') === 'normal' ? 'selected' : '' }}>Normal</option>
-                                <option value="high" {{ old('priority', 'normal') === 'high' ? 'selected' : '' }}>High</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('priority')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="location_type" value="Location Type" />
-                            <select id="location_type" name="location_type" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">
-                                <option value="">Select...</option>
-                                @foreach (\App\Enums\JobLocationType::cases() as $lt)
-                                    <option value="{{ $lt->value }}" {{ old('location_type') === $lt->value ? 'selected' : '' }}>{{ $lt->label() }}</option>
-                                @endforeach
-                            </select>
-                            <x-input-error :messages="$errors->get('location_type')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="location_city" value="Location" />
-                            <x-text-input id="location_city" name="location_city" type="text" class="mt-1 block w-full" :value="old('location_city')" placeholder="e.g. San Francisco, CA" />
-                            <x-input-error :messages="$errors->get('location_city')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="applied_at" value="Applied Date" />
-                            <x-text-input id="applied_at" name="applied_at" type="date" class="mt-1 block w-full" :value="old('applied_at')" />
-                            <x-input-error :messages="$errors->get('applied_at')" class="mt-2" />
+                            <i class="far fa-building absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10"></i>
                         </div>
                     </div>
-                </x-section-card>
+                </div>
 
-                <x-section-card title="Links" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>'>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div>
-                            <x-input-label for="links_job" value="Job Posting URL" />
-                            <x-text-input id="links_job" name="links[job_posting]" type="url" class="mt-1 block w-full" :value="old('links.job_posting')" placeholder="https://..." />
-                            <x-input-error :messages="$errors->get('links.job_posting')" class="mt-2" />
-                        </div>
-                        <div>
-                            <x-input-label for="links_website" value="Company Website" />
-                            <x-text-input id="links_website" name="links[company_website]" type="url" class="mt-1 block w-full" :value="old('links.company_website')" placeholder="https://..." />
-                            <x-input-error :messages="$errors->get('links.company_website')" class="mt-2" />
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="status" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Pipeline Status <span class="text-red-500">*</span></label>
+                        <select id="status" name="status" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition cursor-pointer">
+                            @foreach (\App\Enums\JobApplicationStatus::cases() as $s)
+                                <option value="{{ $s->value }}" {{ old('status') === $s->value ? 'selected' : '' }}>{{ $s->label() }}</option>
+                            @endforeach
+                        </select>
+                        @error('status') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
-                </x-section-card>
-
-                <x-section-card title="Notes" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>'>
-                    <textarea id="notes" name="notes" rows="4" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm" placeholder="Any notes about this application...">{{ old('notes') }}</textarea>
-                    <x-input-error :messages="$errors->get('notes')" class="mt-2" />
-                </x-section-card>
-
-                <x-section-card title="Salary" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div>
-                            <x-input-label for="salary_min" value="Salary Min" />
-                            <x-text-input id="salary_min" name="salary_min" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('salary_min')" placeholder="e.g. 50000" />
-                            <x-input-error :messages="$errors->get('salary_min')" class="mt-2" />
-                        </div>
-                        <div>
-                            <x-input-label for="salary_max" value="Salary Max" />
-                            <x-text-input id="salary_max" name="salary_max" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('salary_max')" placeholder="e.g. 120000" />
-                            <x-input-error :messages="$errors->get('salary_max')" class="mt-2" />
-                        </div>
-                        <div>
-                            <x-input-label for="currency" value="Currency" />
-                            <select id="currency" name="currency" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">
-                                <option value="">Select...</option>
-                                <option value="USD" {{ old('currency') === 'USD' ? 'selected' : '' }}>USD</option>
-                                <option value="EUR" {{ old('currency') === 'EUR' ? 'selected' : '' }}>EUR</option>
-                                <option value="GBP" {{ old('currency') === 'GBP' ? 'selected' : '' }}>GBP</option>
-                                <option value="MAD" {{ old('currency') === 'MAD' ? 'selected' : '' }}>MAD</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('currency')" class="mt-2" />
-                        </div>
-                        <div class="sm:col-span-2">
-                            <x-input-label for="benefits" value="Benefits" />
-                            <textarea id="benefits" name="benefits" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm" placeholder="e.g. Health insurance, 401k, remote allowance...">{{ old('benefits') }}</textarea>
-                            <x-input-error :messages="$errors->get('benefits')" class="mt-2" />
-                        </div>
+                    <div>
+                        <label for="priority" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Priority <span class="text-red-500">*</span></label>
+                        <select id="priority" name="priority" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition cursor-pointer">
+                            <option value="low" {{ old('priority') === 'low' ? 'selected' : '' }}>Low</option>
+                            <option value="normal" {{ old('priority') === 'normal' ? 'selected' : '' }} selected>Normal</option>
+                            <option value="high" {{ old('priority') === 'high' ? 'selected' : '' }}>High</option>
+                        </select>
+                        @error('priority') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
-                </x-section-card>
+                    <div>
+                        <label for="location_type" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Job Location Type</label>
+                        <select id="location_type" name="location_type" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition cursor-pointer">
+                            <option value="">Select...</option>
+                            @foreach (\App\Enums\JobLocationType::cases() as $lt)
+                                <option value="{{ $lt->value }}" {{ old('location_type') === $lt->value ? 'selected' : '' }}>{{ $lt->label() }}</option>
+                            @endforeach
+                        </select>
+                        @error('location_type') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="location_city" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Location</label>
+                        <input type="text" id="location_city" name="location_city" value="{{ old('location_city') }}" placeholder="e.g. San Francisco, CA" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
+                        @error('location_city') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
 
-                <x-section-card title="Tags" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>'>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="links_job" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Job Post URL</label>
+                        <input type="url" id="links_job" name="links[job_posting]" value="{{ old('links.job_posting') }}" placeholder="https://linkedin.com/jobs/..." class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
+                        @error('links.job_posting') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="applied_at" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date Applied</label>
+                        <input type="date" id="applied_at" name="applied_at" value="{{ old('applied_at', now()->format('Y-m-d')) }}" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
+                        @error('applied_at') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="salary_min" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Salary Min</label>
+                        <input type="number" id="salary_min" name="salary_min" step="0.01" min="0" value="{{ old('salary_min') }}" placeholder="e.g. 50000" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
+                        @error('salary_min') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="salary_max" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Salary Max</label>
+                        <input type="number" id="salary_max" name="salary_max" step="0.01" min="0" value="{{ old('salary_max') }}" placeholder="e.g. 120000" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
+                        @error('salary_max') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="currency" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Currency</label>
+                        <select id="currency" name="currency" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition cursor-pointer">
+                            <option value="">Select...</option>
+                            <option value="USD" {{ old('currency') === 'USD' ? 'selected' : '' }}>USD</option>
+                            <option value="EUR" {{ old('currency') === 'EUR' ? 'selected' : '' }}>EUR</option>
+                            <option value="GBP" {{ old('currency') === 'GBP' ? 'selected' : '' }}>GBP</option>
+                            <option value="MAD" {{ old('currency') === 'MAD' ? 'selected' : '' }}>MAD</option>
+                        </select>
+                        @error('currency') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-4">
+                <h2 class="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3 flex items-center gap-2">
+                    <i class="far fa-file-alt text-[#2563eb]"></i> Details & Assets
+                </h2>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tags</label>
                     <div x-data="{ selectedTags: {{ json_encode(old('tags', [])) }} }">
-                        <input type="hidden" name="tags" :value="selectedTags.join(',') ? JSON.stringify(selectedTags) : ''">
+                        <template x-for="(tagId, index) in selectedTags" :key="index">
+                            <input type="hidden" name="tags[]" :value="tagId">
+                        </template>
                         <div class="flex flex-wrap gap-2">
                             <template x-for="tag in {{ json_encode($tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color])->values()) }}" :key="tag.id">
                                 <button type="button" @click="selectedTags.includes(tag.id) ? selectedTags = selectedTags.filter(t => t !== tag.id) : selectedTags.push(tag.id)"
-                                    :class="selectedTags.includes(tag.id) ? 'ring-2 ring-offset-1 ring-emerald-500 dark:ring-offset-gray-800' : 'opacity-70 hover:opacity-100'"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150">
+                                    :class="selectedTags.includes(tag.id) ? 'ring-2 ring-offset-1 ring-[#2563eb] dark:ring-offset-slate-800' : 'opacity-70 hover:opacity-100'"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
                                     <span :style="'background-color: ' + tag.color" class="w-2 h-2 rounded-full"></span>
                                     <span x-text="tag.name"></span>
                                 </button>
                             </template>
                         </div>
                         @if($tags->isEmpty())
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">No tags created yet. <a href="{{ route('tags.index') }}" class="text-emerald-600 dark:text-emerald-400 hover:underline">Manage tags</a></p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">No tags created yet. <a href="{{ route('tags.index') }}" class="text-[#2563eb] dark:text-blue-400 hover:underline">Manage tags</a></p>
                         @endif
-                        <x-input-error :messages="$errors->get('tags')" class="mt-2" />
+                        @error('tags') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
-                </x-section-card>
-
-                <div class="flex gap-3 justify-end">
-                    <a href="{{ route('job-applications.index') }}" class="inline-flex items-center px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl font-medium text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        Cancel
-                    </a>
-                    <x-primary-button>
-                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Save Application
-                    </x-primary-button>
                 </div>
-            </form>
-        </div>
+
+                <div>
+                    <label for="notes" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Notes / Description</label>
+                    <textarea id="notes" name="notes" rows="4" placeholder="Paste job description requirements, interview panel details, or referral info here..." class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition resize-none">{{ old('notes') }}</textarea>
+                    @error('notes') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div x-data="{ files: [] }">
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Attach Relevant Files (Resume, Cover Letter)</label>
+                    <div class="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-6 text-center hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition cursor-pointer group">
+                        <input type="file" class="hidden" id="file-upload" name="documents[]" multiple accept=".pdf,.doc,.docx"
+                               @change="files = [...$event.target.files]">
+                        <label for="file-upload" class="cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-slate-300 dark:text-slate-500 group-hover:text-[#2563eb] transition mb-2"></i>
+                            <div class="font-bold text-slate-700 dark:text-slate-300 text-sm">Click to upload or drag files here</div>
+                            <div class="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">PDF, DOCX up to 10MB</div>
+                        </label>
+                    </div>
+                    <template x-if="files.length > 0">
+                        <div class="mt-3 space-y-2">
+                            <template x-for="(file, i) in files" :key="i">
+                                <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 px-4 py-2 rounded-lg text-sm">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <i class="fas fa-file text-[#2563eb]"></i>
+                                        <span class="truncate text-slate-700 dark:text-slate-300 font-medium" x-text="file.name"></span>
+                                        <span class="text-xs text-slate-400 flex-shrink-0" x-text="(file.size / 1024).toFixed(1) + ' KB'"></span>
+                                    </div>
+                                    <button type="button" @click="files = []; $el.closest('div').querySelector('#file-upload').value = ''" class="text-red-400 hover:text-red-600 ml-2 flex-shrink-0">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <a href="{{ route('job-applications.index') }}" class="px-5 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-sm">
+                    Cancel
+                </a>
+                <button type="submit" class="px-5 py-2.5 bg-[#2563eb] text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-sm">
+                    Save Application
+                </button>
+            </div>
+
+        </form>
     </div>
 </x-app-layout>

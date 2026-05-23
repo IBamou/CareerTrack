@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome back</h1>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Sign in to manage your job applications</p>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h1>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Sign in to manage your job applications</p>
     </div>
 
     <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -27,12 +27,12 @@
 
         <div class="flex items-center justify-between mt-4">
             <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-emerald-600 shadow-sm focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
+                <input id="remember_me" type="checkbox" class="rounded dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-[#2563eb] focus:ring-[#2563eb] dark:focus:ring-blue-500 dark:focus:ring-offset-slate-800" name="remember">
+                <span class="ms-2 text-sm text-slate-600 dark:text-slate-400">{{ __('Remember me') }}</span>
             </label>
 
             @if (Route::has('password.request'))
-                <a class="text-sm text-emerald-600 dark:text-emerald-400 hover:underline" href="{{ route('password.request') }}">
+                <a class="text-sm text-[#2563eb] dark:text-blue-400 hover:underline" href="{{ route('password.request') }}">
                     {{ __('Forgot password?') }}
                 </a>
             @endif
@@ -44,9 +44,9 @@
             </x-primary-button>
         </div>
 
-        <p class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p class="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
             Don't have an account?
-            <a href="{{ route('register') }}" class="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">Create one</a>
+            <a href="{{ route('register') }}" class="text-[#2563eb] dark:text-blue-400 hover:underline font-medium">Create one</a>
         </p>
     </form>
 </x-guest-layout>

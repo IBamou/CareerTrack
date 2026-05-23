@@ -5,16 +5,21 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Company\StoreCompanyRequest;
 use App\Http\Requests\Company\UpdateCompanyRequest;
 use App\Models\Company;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CompanyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $companies = Company::withCount('jobApplications')
             ->where('user_id', Auth::id())
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->q . '%');
+            })
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('company.index', compact('companies'));
     }

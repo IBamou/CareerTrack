@@ -41,11 +41,25 @@ class TagController extends Controller
         return redirect()->back()->with('status', 'Tag updated.');
     }
 
+    public function show(Tag $tag)
+    {
+        $this->authorize('view', $tag);
+
+        $tag->loadCount(['jobApplications', 'companies', 'contacts']);
+        $tag->load([
+            'jobApplications' => fn($q) => $q->with('company')->latest(),
+            'companies',
+            'contacts' => fn($q) => $q->with('company'),
+        ]);
+
+        return view('tag.show', compact('tag'));
+    }
+
     public function destroy(Tag $tag)
     {
         $this->authorize('delete', $tag);
         $tag->delete();
 
-        return response()->json(['success' => true]);
+        return redirect()->route('tags.index')->with('status', 'Tag deleted.');
     }
 }

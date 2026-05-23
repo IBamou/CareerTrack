@@ -1,57 +1,100 @@
 <x-app-layout>
     <x-slot name="header">Companies</x-slot>
 
-    <div class="p-4 lg:p-6">
-        <div class="max-w-7xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto">
 
-            @if (session('status'))
-                <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                    {{ session('status') }}
-                </div>
-            @endif
+        @if (session('status'))
+            <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl text-sm font-medium text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                <i class="fas fa-check-circle text-blue-500"></i>
+                {{ session('status') }}
+            </div>
+        @endif
 
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">All Companies</h2>
-                <a href="{{ route('companies.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    Add Company
+        <header class="flex-shrink-0 flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Companies</h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-1">Track companies you're applying to.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="{{ route('companies.create') }}" class="bg-[#2563eb] text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2 text-sm shadow-sm">
+                    <i class="fas fa-plus"></i> Add Company
                 </a>
             </div>
+        </header>
 
-            @if ($companies->isEmpty())
-                <x-empty-state
-                    title="No companies yet"
-                    message="Add companies to your directory to track them alongside your applications."
-                    :action="route('companies.create')"
-                    action-label="Add Company"
-                />
-            @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @foreach ($companies as $company)
-                        <a href="{{ route('companies.show', $company) }}" class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-md transition-all group">
-                            <div class="flex items-start gap-4">
-                                <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-sm font-semibold flex-shrink-0">
-                                    {{ strtoupper(substr($company->name, 0, 1)) }}
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate">{{ $company->name }}</h3>
-                                    @if ($company->industry)
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $company->industry }}</p>
-                                    @endif
-                                    @if ($company->location)
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $company->location }}</p>
-                                    @endif
-                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">{{ $company->job_applications_count }} application{{ $company->job_applications_count !== 1 ? 's' : '' }}</p>
-                                </div>
-                            </div>
-                        </a>
-                    @endforeach
+        <form method="GET" action="{{ route('companies.index') }}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-6">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <div class="relative w-full md:w-72">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" name="q" placeholder="Search companies..." value="{{ request('q') }}" class="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm">
                 </div>
+                @if (request()->filled('q'))
+                    <a href="{{ route('companies.index') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 underline">Clear</a>
+                @endif
+            </div>
+        </form>
 
-                <div class="mt-6">
-                    {{ $companies->links() }}
+        @if ($companies->isEmpty())
+            <x-empty-state
+                title="No companies yet"
+                message="Add companies to your directory to track them alongside your applications."
+                :action="route('companies.create')"
+                label="Add Company"
+            />
+        @else
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
+                            <th class="p-4 pl-6">Company</th>
+                            <th class="p-4">Industry</th>
+                            <th class="p-4">Location</th>
+                            <th class="p-4">Applications</th>
+                            <th class="p-4 text-right pr-6">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                        @foreach ($companies as $company)
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition">
+                                <td class="p-4 pl-6">
+                                    <a href="{{ route('companies.show', $company) }}" class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-full bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600 shadow-sm flex items-center justify-center flex-shrink-0 font-bold text-sm" style="color: {{ $company->color ?? '#2563eb' }}">
+                                            {{ strtoupper(substr($company->name, 0, 1)) }}
+                                        </div>
+                                        <div class="font-bold text-slate-900 dark:text-white">{{ $company->name }}</div>
+                                    </a>
+                                </td>
+                                <td class="p-4 text-slate-600 dark:text-slate-400 font-medium">{{ $company->industry ?? '—' }}</td>
+                                <td class="p-4 text-slate-600 dark:text-slate-400 font-medium">{{ $company->location ?? '—' }}</td>
+                                <td class="p-4">
+                                    <span class="text-slate-600 dark:text-slate-400 font-medium">{{ $company->job_applications_count }}</span>
+                                </td>
+                                <td class="p-4 text-right pr-6">
+                                    <a href="{{ route('companies.edit', $company) }}" class="text-slate-400 hover:text-[#2563eb] p-1 inline-block"><i class="fas fa-pen"></i></a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <div class="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/50">
+                    <div>
+                        Showing <span class="font-medium text-slate-900 dark:text-white">{{ $companies->firstItem() ?? 0 }}</span> to <span class="font-medium text-slate-900 dark:text-white">{{ $companies->lastItem() ?? 0 }}</span> of <span class="font-medium text-slate-900 dark:text-white">{{ $companies->total() }}</span> companies
+                    </div>
+                    <div class="flex gap-1">
+                        @if ($companies->onFirstPage())
+                            <button disabled class="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-medium text-sm opacity-50 cursor-not-allowed">Previous</button>
+                        @else
+                            <a href="{{ $companies->previousPageUrl() }}" class="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition text-sm">Previous</a>
+                        @endif
+                        @if ($companies->hasMorePages())
+                            <a href="{{ $companies->nextPageUrl() }}" class="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition text-sm">Next</a>
+                        @else
+                            <button disabled class="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-medium text-sm opacity-50 cursor-not-allowed">Next</button>
+                        @endif
+                    </div>
                 </div>
-            @endif
-        </div>
+            </div>
+        @endif
     </div>
 </x-app-layout>

@@ -7,7 +7,7 @@
                 @csrf
                 @method('PUT')
 
-                <x-section-card title="Interview Details" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>'>
+                <x-section-card title="Interview Details">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div class="sm:col-span-2">
                             <x-input-label for="job_application_id" value="Job Application" />
@@ -53,7 +53,7 @@
                     </div>
                 </x-section-card>
 
-                <x-section-card title="Notes" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>'>
+                <x-section-card title="Notes">
                     <textarea id="notes" name="notes" rows="4" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">{{ old('notes', $interview->notes) }}</textarea>
                     <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                 </x-section-card>
