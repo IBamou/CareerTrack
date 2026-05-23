@@ -6,16 +6,29 @@ use App\Models\Contact;
 use App\Models\Company;
 use App\Http\Requests\Contact\StoreContactRequest;
 use App\Http\Requests\Contact\UpdateContactRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ContactController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $contacts = Contact::where('user_id', Auth::id())
             ->with('company')
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $search = $request->q;
+                $q->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('role', 'like', "%{$search}%")
+                        ->orWhereHas('company', function ($cq) use ($search) {
+                            $cq->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
             ->orderBy('name')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('contact.index', compact('contacts'));
     }

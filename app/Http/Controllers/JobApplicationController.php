@@ -7,10 +7,12 @@ use App\Http\Requests\JobApplication\StoreJobApplicationRequest;
 use App\Http\Requests\JobApplication\UpdateJobApplicationRequest;
 use App\Http\Requests\JobApplication\UpdateStatusJobApplicationRequest;
 use App\Models\Company;
+use App\Models\Document;
 use App\Models\JobApplication;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class JobApplicationController extends Controller
 {
@@ -18,13 +20,21 @@ class JobApplicationController extends Controller
     {
         $userId = Auth::id();
 
-        $jobApplications = JobApplication::with('company')
+        $jobApplications = JobApplication::with(['company', 'interviews'])
             ->where('applied_by', $userId)
             ->when($request->filled('status'), function ($q) use ($request) {
                 $q->where('status', $request->status);
             })
             ->when($request->filled('priority'), function ($q) use ($request) {
                 $q->where('priority', $request->priority);
+            })
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $q->where(function ($query) use ($request) {
+                    $query->where('job_title', 'like', '%' . $request->q . '%')
+                        ->orWhereHas('company', function ($cq) use ($request) {
+                            $cq->where('name', 'like', '%' . $request->q . '%');
+                        });
+                });
             })
             ->latest()
             ->paginate(15)
@@ -101,10 +111,25 @@ class JobApplicationController extends Controller
         $application = JobApplication::create($validated);
 
         if ($request->filled('tags')) {
-            $application->syncTags($request->tags);
+            $application->tags()->sync($request->tags);
         }
 
-        return redirect()->route('job-applications.index');
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $file) {
+                $path = $file->store('documents/' . Auth::id(), 'public');
+                Document::create([
+                    'user_id' => Auth::id(),
+                    'documentable_type' => get_class($application),
+                    'documentable_id' => $application->id,
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $path,
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                ]);
+            }
+        }
+
+        return redirect()->route('job-applications.show', $application);
     }
 
     public function show(JobApplication $jobApplication)
@@ -118,6 +143,8 @@ class JobApplicationController extends Controller
 
     public function edit(JobApplication $jobApplication)
     {
+        $this->authorize('update', $jobApplication);
+
         $companies = Company::where('user_id', Auth::id())->get();
         $tags = Tag::where('user_id', Auth::id())->orderBy('name')->get();
 
@@ -146,7 +173,7 @@ class JobApplicationController extends Controller
         $jobApplication->update($validated);
 
         if ($request->filled('tags')) {
-            $jobApplication->syncTags($request->tags);
+            $jobApplication->tags()->sync($request->tags);
         }
 
         return redirect()->route('job-applications.show', ['jobApplication' => $jobApplication->id]);
@@ -211,6 +238,10 @@ class JobApplicationController extends Controller
                 }
             }
         } elseif ($action === 'change_status' && $request->filled('bulk_status')) {
+            $validStatuses = array_column(JobApplicationStatus::cases(), 'value');
+            if (!in_array($request->bulk_status, $validStatuses, true)) {
+                return redirect()->route('job-applications.index');
+            }
             foreach ($applications as $app) {
                 if (Auth::user()->can('update', $app)) {
                     $app->update(['status' => $request->bulk_status]);

@@ -36,16 +36,8 @@ Route::get('/archives', [ArchivesController::class, 'index'])
 
 Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/notifications/{id}/mark-read', function ($id) {
-        $notification = auth()->user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
-        return response()->json(['success' => true]);
-    })->name('notifications.mark-read');
-
-    Route::post('/notifications/mark-all-read', function () {
-        auth()->user()->unreadNotifications->markAsRead();
-        return response()->json(['success' => true]);
-    })->name('notifications.mark-all-read');
+    Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -124,6 +116,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/store', 'store')->name('tags.store');
         Route::put('/{tag}/update', 'update')->name('tags.update');
         Route::delete('/{tag}', 'destroy')->name('tags.destroy');
+        Route::get('/{tag}', 'show')->name('tags.show');
     });
 });
 

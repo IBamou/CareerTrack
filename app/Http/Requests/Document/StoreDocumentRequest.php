@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Document;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreDocumentRequest extends FormRequest
 {
@@ -16,6 +17,13 @@ class StoreDocumentRequest extends FormRequest
         return [
             'file' => ['required', 'file', 'max:10240'],
             'name' => ['nullable', 'string', 'max:255'],
+            'documentable_type' => ['required', 'string', Rule::in([
+                'App\Models\JobApplication',
+                'App\Models\Company',
+                'App\Models\Interview',
+                'App\Models\Contact',
+            ])],
+            'documentable_id' => ['required', 'integer'],
         ];
     }
 }

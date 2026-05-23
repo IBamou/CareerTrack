@@ -20,11 +20,11 @@ class UpdateJobApplicationRequest extends FormRequest
     {
         return [
             'job_title' => 'sometimes|required|string|max:255',
-            'company_id' => ['nullable', 'integer', Rule::exists('companies', 'id')->where('user_id', auth()->id())],
+            'company_id' => ['nullable', 'integer', 'exists:companies,id'],
             'new_company_name' => 'nullable|string|max:255',
-            'status' => ['sometimes|required', new Enum(JobApplicationStatus::class)],
+            'status' => ['sometimes', 'required', new Enum(JobApplicationStatus::class)],
             'priority' => 'sometimes|required|string|in:low,normal,high',
-            'location_type' => ['sometimes|required', new Enum(JobLocationType::class)],
+            'location_type' => ['sometimes', 'required', new Enum(JobLocationType::class)],
             'location_city' => 'nullable|string|max:255',
             'applied_at' => 'nullable|date',
             'next_follow_up_at' => 'nullable|date',
@@ -36,7 +36,7 @@ class UpdateJobApplicationRequest extends FormRequest
             'currency' => ['sometimes', 'nullable', 'string', 'max:3'],
             'benefits' => ['sometimes', 'nullable', 'string'],
             'tags' => ['sometimes', 'nullable', 'array'],
-            'tags.*' => ['exists:tags,id'],
+            'tags.*' => [Rule::exists('tags', 'id')->where('user_id', auth()->id())],
         ];
     }
 
@@ -45,8 +45,9 @@ class UpdateJobApplicationRequest extends FormRequest
         $validator->after(function ($validator) {
             $companyId = $this->input('company_id');
             $newName = $this->input('new_company_name');
+            $existingCompanyId = $this->route('jobApplication')?->company_id;
 
-            if (blank($companyId) && blank($newName)) {
+            if (blank($companyId) && blank($newName) && blank($existingCompanyId)) {
                 $validator->errors()->add('company_id', 'Please select a company or enter a new company name.');
             }
 

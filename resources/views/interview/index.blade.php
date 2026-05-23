@@ -1,76 +1,110 @@
 <x-app-layout>
     <x-slot name="header">Interviews</x-slot>
 
-    <div class="p-4 lg:p-6">
-        <div class="max-w-7xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto">
 
-            @if (session('status'))
-                <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                    {{ session('status') }}
-                </div>
-            @endif
+        @if (session('status'))
+            <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl text-sm font-medium text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                <i class="fas fa-check-circle text-blue-500"></i>
+                {{ session('status') }}
+            </div>
+        @endif
 
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">All Interviews</h2>
-                <a href="{{ route('interviews.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    Add Interview
+        <header class="flex-shrink-0 flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Interviews</h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-1">Track your scheduled interviews.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="{{ route('interviews.create') }}" class="bg-[#2563eb] text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2 text-sm shadow-sm">
+                    <i class="fas fa-plus"></i> Add Interview
                 </a>
             </div>
+        </header>
 
-            @if ($interviews->isEmpty())
-                <x-empty-state
-                    title="No interviews yet"
-                    message="Schedule your first interview to see it here."
-                    :action="route('interviews.create')"
-                    action-label="Add Interview"
-                />
-            @else
-                <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-                    <div class="divide-y divide-gray-100 dark:divide-gray-800">
+        <form method="GET" action="{{ route('interviews.index') }}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-6">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <div class="relative w-full md:w-72">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" name="q" placeholder="Search interviews..." value="{{ request('q') }}" class="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm">
+                </div>
+                @if (request()->filled('q'))
+                    <a href="{{ route('interviews.index') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 underline">Clear</a>
+                @endif
+            </div>
+        </form>
+
+        @if ($interviews->isEmpty())
+            <x-empty-state
+                title="No interviews yet"
+                message="Schedule your first interview to see it here."
+                :action="route('interviews.create')"
+                label="Add Interview"
+            />
+        @else
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
+                            <th class="p-4 pl-6">Type</th>
+                            <th class="p-4">Application</th>
+                            <th class="p-4">Scheduled</th>
+                            <th class="p-4">Result</th>
+                            <th class="p-4 text-right pr-6">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-700 text-sm">
                         @foreach ($interviews as $interview)
-                            <div class="p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                <div class="flex items-center gap-4">
-                                    <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex-shrink-0">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    </div>
-
-                                    <div class="flex-1 min-w-0">
-                                        <a href="{{ route('interviews.show', $interview) }}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 truncate block">{{ $interview->type }}</a>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                                            {{ $interview->scheduled_at?->format('M d, Y g:i A') }}
-                                            &middot; {{ $interview->jobApplication?->job_title ?? 'No application' }}
-                                        </p>
-                                    </div>
-
-                                    @if ($interview->result)
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">{{ $interview->result }}</span>
-                                    @endif
-
-                                    <div class="flex items-center gap-1 flex-shrink-0" x-data="{ open: false }">
-                                        <button @click="open = !open" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
-                                        </button>
-                                        <div x-show="open" @click.outside="open = false" class="absolute right-0 z-50 mt-8 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1" style="display: none;">
-                                            <a href="{{ route('interviews.show', $interview) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">View</a>
-                                            <a href="{{ route('interviews.edit', $interview) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">Edit</a>
-                                            <form method="POST" action="{{ route('interviews.archive', $interview) }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10">Archive</button>
-                                            </form>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition">
+                                <td class="p-4 pl-6">
+                                    <a href="{{ route('interviews.show', $interview) }}" class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-full bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600 shadow-sm flex items-center justify-center flex-shrink-0 text-[#2563eb]">
+                                            <i class="far fa-calendar-alt"></i>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
+                                        <div class="font-bold text-slate-900 dark:text-white">{{ $interview->type }}</div>
+                                    </a>
+                                </td>
+                                <td class="p-4">
+                                    <div class="text-slate-600 dark:text-slate-400 font-medium">{{ $interview->jobApplication?->job_title ?? '—' }}</div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-500">{{ $interview->jobApplication?->company?->name ?? '' }}</div>
+                                </td>
+                                <td class="p-4 text-slate-600 dark:text-slate-400 font-medium">{{ $interview->scheduled_at?->format('M d, Y g:i A') }}</td>
+                                <td class="p-4">
+                                    @if ($interview->result)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">{{ $interview->result }}</span>
+                                    @else
+                                        <span class="text-slate-400 dark:text-slate-500 italic">Pending</span>
+                                    @endif
+                                </td>
+                                <td class="p-4 text-right pr-6">
+                                    <a href="{{ route('interviews.edit', $interview) }}" class="text-slate-400 hover:text-[#2563eb] p-1 inline-block"><i class="fas fa-pen"></i></a>
+                                    <button type="button" @click="$dispatch('open-modal-archive_{{ $interview->id }}')" class="text-slate-400 hover:text-red-500 p-1 ml-2 inline-block"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+
+                            <x-confirm-action-modal name="archive-{{ $interview->id }}" title="Archive Interview?" message="This will move the interview to the archive. You can restore it later." :action="route('interviews.archive', $interview)" method="delete" button="Archive" />
                         @endforeach
+                    </tbody>
+                </table>
+
+                <div class="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/50">
+                    <div>
+                        Showing <span class="font-medium text-slate-900 dark:text-white">{{ $interviews->firstItem() ?? 0 }}</span> to <span class="font-medium text-slate-900 dark:text-white">{{ $interviews->lastItem() ?? 0 }}</span> of <span class="font-medium text-slate-900 dark:text-white">{{ $interviews->total() }}</span> interviews
+                    </div>
+                    <div class="flex gap-1">
+                        @if ($interviews->onFirstPage())
+                            <button disabled class="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-medium text-sm opacity-50 cursor-not-allowed">Previous</button>
+                        @else
+                            <a href="{{ $interviews->previousPageUrl() }}" class="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition text-sm">Previous</a>
+                        @endif
+                        @if ($interviews->hasMorePages())
+                            <a href="{{ $interviews->nextPageUrl() }}" class="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition text-sm">Next</a>
+                        @else
+                            <button disabled class="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-medium text-sm opacity-50 cursor-not-allowed">Next</button>
+                        @endif
                     </div>
                 </div>
-
-                <div class="mt-6">
-                    {{ $interviews->links() }}
-                </div>
-            @endif
-        </div>
+            </div>
+        @endif
     </div>
 </x-app-layout>

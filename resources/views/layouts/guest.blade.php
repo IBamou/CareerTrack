@@ -6,21 +6,20 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'CareerTrack') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased">
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-emerald-950">
+<body class="font-sans antialiased bg-[#f8fafc] dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-blue-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950">
         <div class="mb-6">
             <a href="/" class="flex items-center gap-2">
-                <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-                <span class="text-xl font-bold text-gray-900 dark:text-white">{{ config('app.name', 'CareerTrack') }}</span>
+                <i class="fas fa-briefcase text-[#2563eb] dark:text-blue-400 text-2xl"></i>
+                <span class="text-xl font-bold text-slate-900 dark:text-white">{{ config('app.name', 'CareerTrack') }}</span>
             </a>
         </div>
 
-        <div class="w-full sm:max-w-md px-6 py-6 bg-white dark:bg-gray-800 shadow-lg shadow-emerald-100/50 dark:shadow-black/20 sm:rounded-2xl">
+        <div class="w-full sm:max-w-md px-6 py-6 bg-white dark:bg-slate-800 shadow-lg shadow-blue-100/50 dark:shadow-black/20 sm:rounded-xl border border-slate-200 dark:border-slate-700">
             {{ $slot }}
         </div>
     </div>

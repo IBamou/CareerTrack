@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Contact;
 use App\Models\JobApplication;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,16 +14,18 @@ class SearchController extends Controller
     public function index(Request $request)
     {
         $query = $request->query('q', '');
-        $type = in_array($request->query('type', 'all'), ['all', 'applications', 'companies', 'contacts']) ? $request->query('type', 'all') : 'all';
+        $type = in_array($request->query('type', 'all'), ['all', 'applications', 'companies', 'contacts', 'tags']) ? $request->query('type', 'all') : 'all';
 
         $userId = Auth::id();
 
         $applications = collect();
         $companies = collect();
         $contacts = collect();
+        $tags = collect();
         $appCount = 0;
         $companyCount = 0;
         $contactCount = 0;
+        $tagCount = 0;
 
         if (empty($query)) {
             return view('search.index', [
@@ -60,6 +63,10 @@ class SearchController extends Controller
                     ->orWhere('email', 'like', "%{$query}%")
                     ->orWhere('notes', 'like', "%{$query}%");
             })->count();
+
+        $tagCount = Tag::where('user_id', $userId)
+            ->where('name', 'like', "%{$query}%")
+            ->count();
 
         if ($type === 'all' || $type === 'applications') {
             $applications = JobApplication::with('company')
@@ -101,8 +108,17 @@ class SearchController extends Controller
                 ->withQueryString();
         }
 
-        $totalResults = $appCount + $companyCount + $contactCount;
+        if ($type === 'all' || $type === 'tags') {
+            $tags = Tag::withCount(['jobApplications', 'companies', 'contacts'])
+                ->where('user_id', $userId)
+                ->where('name', 'like', "%{$query}%")
+                ->orderBy('name')
+                ->paginate(20)
+                ->withQueryString();
+        }
 
-        return view('search.index', compact('query', 'type', 'applications', 'companies', 'contacts', 'totalResults', 'appCount', 'companyCount', 'contactCount'));
+        $totalResults = $appCount + $companyCount + $contactCount + $tagCount;
+
+        return view('search.index', compact('query', 'type', 'applications', 'companies', 'contacts', 'tags', 'totalResults', 'appCount', 'companyCount', 'contactCount', 'tagCount'));
     }
 }

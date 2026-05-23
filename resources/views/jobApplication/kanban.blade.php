@@ -54,7 +54,7 @@
                     },
                     drop(statusValue) {
                         if (!this.draggedId) return;
-                        $el.querySelector('#status-form-' + this.draggedId + ' input[name=\\'status\\']').value = statusValue;
+                        $el.querySelector('#status-form-' + this.draggedId + ' input[name="status"]').value = statusValue;
                         $el.querySelector('#status-form-' + this.draggedId).submit();
                     }
                 }"
@@ -122,14 +122,6 @@
                 @endforeach
             </div>
 
-            @if ($applications->flatten()->isEmpty())
-                <x-empty-state
-                    title="No applications yet"
-                    message="Add your first application to start building your kanban board."
-                    :action="route('job-applications.create')"
-                    action-label="Add Application"
-                />
-            @endif
         </div>
     </div>
 </x-app-layout>

@@ -24,7 +24,7 @@ class StoreJobApplicationRequest extends FormRequest
             'new_company_name' => 'nullable|string|max:255',
             'status' => ['required', new Enum(JobApplicationStatus::class)],
             'priority' => 'required|string|in:low,normal,high',
-            'location_type' => ['required', new Enum(JobLocationType::class)],
+            'location_type' => ['nullable', new Enum(JobLocationType::class)],
             'location_city' => 'nullable|string|max:255',
             'applied_at' => 'nullable|date',
             'next_follow_up_at' => 'nullable|date',
@@ -36,7 +36,9 @@ class StoreJobApplicationRequest extends FormRequest
             'currency' => ['nullable', 'string', 'max:3'],
             'benefits' => ['nullable', 'string'],
             'tags' => ['nullable', 'array'],
-            'tags.*' => ['exists:tags,id'],
+            'tags.*' => [Rule::exists('tags', 'id')->where('user_id', auth()->id())],
+            'documents' => ['nullable', 'array'],
+            'documents.*' => ['file', 'mimes:pdf,doc,docx', 'max:10240'],
         ];
     }
 

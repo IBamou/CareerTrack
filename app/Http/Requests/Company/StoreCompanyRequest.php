@@ -16,7 +16,7 @@ class StoreCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255', Rule::unique('companies')],
+            'name' => ['required', 'string', 'max:255', Rule::unique('companies')->where('user_id', auth()->id())],
             'website' => 'nullable|url|active_url',
             'industry' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:255',

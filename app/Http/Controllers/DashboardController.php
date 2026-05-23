@@ -8,23 +8,36 @@ use App\Models\Interview;
 use App\Models\JobApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $userId = Auth::id();
+        $totalApps = JobApplication::where('applied_by', $userId)->count();
 
         $stats = [
-            'applications' => JobApplication::where('applied_by', $userId)->count(),
-            'companies' => Company::where('user_id', $userId)->count(),
-            'active' => JobApplication::where('applied_by', $userId)
+            'total' => $totalApps,
+            'in_progress' => JobApplication::where('applied_by', $userId)
                 ->whereIn('status', [JobApplicationStatus::Applied, JobApplicationStatus::InReview])
                 ->count(),
             'interviews' => Interview::where('user_id', $userId)
                 ->where('scheduled_at', '>=', now())
                 ->count(),
+            'offers' => JobApplication::where('applied_by', $userId)
+                ->whereIn('status', [JobApplicationStatus::Offer, JobApplicationStatus::Accepted])
+                ->count(),
+            'rejections' => JobApplication::where('applied_by', $userId)
+                ->whereIn('status', [JobApplicationStatus::Rejected, JobApplicationStatus::Ghosted])
+                ->count(),
+            'companies' => Company::where('user_id', $userId)->count(),
+            'applied' => JobApplication::where('applied_by', $userId)->where('status', JobApplicationStatus::Applied)->count(),
+            'screening' => JobApplication::where('applied_by', $userId)->where('status', JobApplicationStatus::InReview)->count(),
+            'interviewing' => JobApplication::where('applied_by', $userId)->whereIn('status', [
+                JobApplicationStatus::HrInterview, JobApplicationStatus::TechnicalInterview, JobApplicationStatus::FinalInterview
+            ])->count(),
+            'offer_count' => JobApplication::where('applied_by', $userId)->where('status', JobApplicationStatus::Offer)->count(),
+            'rejected_count' => JobApplication::where('applied_by', $userId)->where('status', JobApplicationStatus::Rejected)->count(),
         ];
 
         $recentApplications = JobApplication::with('company')
@@ -33,20 +46,17 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $monthly = JobApplication::where('applied_by', $userId)
-            ->selectRaw('YEAR(applied_at) as year, MONTH(applied_at) as month, COUNT(*) as count')
-            ->whereNotNull('applied_at')
-            ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
+        $upcomingEvents = Interview::with('jobApplication.company')
+            ->where('user_id', $userId)
+            ->where('scheduled_at', '>=', now())
+            ->orderBy('scheduled_at')
+            ->take(5)
             ->get();
 
-        $statusDistribution = JobApplication::where('applied_by', $userId)
-            ->selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')
-            ->pluck('count', 'status');
+        $userName = Auth::user()->name;
+        $userInitial = strtoupper(substr($userName, 0, 1));
 
-        return view('dashboard', compact('stats', 'recentApplications', 'monthly', 'statusDistribution'));
+        return view('dashboard', compact('stats', 'recentApplications', 'upcomingEvents', 'userName', 'userInitial'));
     }
 
     public function quickAdd(Request $request)
