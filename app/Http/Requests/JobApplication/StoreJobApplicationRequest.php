@@ -4,7 +4,6 @@ namespace App\Http\Requests\JobApplication;
 
 use App\Enums\JobApplicationStatus;
 use App\Enums\JobLocationType;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -29,7 +28,8 @@ class StoreJobApplicationRequest extends FormRequest
             'applied_at' => 'nullable|date',
             'next_follow_up_at' => 'nullable|date',
             'links' => 'nullable|array',
-            'links.*' => 'nullable|url:http,https',
+            'links.*.label' => 'required|string|max:255',
+            'links.*.url' => 'required|url:http,https',
             'notes' => 'nullable|string',
             'salary_min' => ['nullable', 'numeric', 'min:0'],
             'salary_max' => ['nullable', 'numeric', 'min:0'],

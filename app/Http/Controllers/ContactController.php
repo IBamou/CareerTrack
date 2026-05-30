@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contact;
-use App\Models\Company;
 use App\Http\Requests\Contact\StoreContactRequest;
 use App\Http\Requests\Contact\UpdateContactRequest;
+use App\Models\Company;
+use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -47,6 +47,7 @@ class ContactController extends Controller
     public function create()
     {
         $companies = Company::where('user_id', Auth::id())->orderBy('name')->get();
+
         return view('contact.create', compact('companies'));
     }
 
@@ -64,6 +65,7 @@ class ContactController extends Controller
     public function show(Contact $contact)
     {
         $this->authorize('view', $contact);
+
         return view('contact.show', compact('contact'));
     }
 
@@ -71,6 +73,7 @@ class ContactController extends Controller
     {
         $this->authorize('update', $contact);
         $companies = Company::where('user_id', Auth::id())->orderBy('name')->get();
+
         return view('contact.edit', compact('contact', 'companies'));
     }
 
@@ -92,9 +95,8 @@ class ContactController extends Controller
             ->with('status', 'Contact archived.');
     }
 
-    public function restore($id)
+    public function restore(Contact $contact)
     {
-        $contact = Contact::withTrashed()->findOrFail($id);
         $this->authorize('restore', $contact);
         $contact->restore();
 
@@ -102,9 +104,8 @@ class ContactController extends Controller
             ->with('status', 'Contact restored.');
     }
 
-    public function forceDelete($id)
+    public function forceDelete(Contact $contact)
     {
-        $contact = Contact::withTrashed()->findOrFail($id);
         $this->authorize('forceDelete', $contact);
         $contact->forceDelete();
 

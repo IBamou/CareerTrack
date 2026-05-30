@@ -20,8 +20,21 @@
         </style>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <script>
+            window.showToast = function(message, type) {
+                type = type || 'success';
+                const colors = { success: 'bg-emerald-600', error: 'bg-red-600', warning: 'bg-amber-500', info: 'bg-blue-600' };
+                const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+                const toast = { id: Date.now() + Math.random(), message: message, type: type, color: colors[type] || colors.info, icon: icons[type] || icons.info, leaving: false };
+                const app = document.querySelector('[x-data]').__x.$data;
+                app.toasts.push(toast);
+                setTimeout(() => { toast.leaving = true; }, 4000);
+                setTimeout(() => { app.toasts = app.toasts.filter(t => t.id !== toast.id); }, 4500);
+            };
+        </script>
     </head>
-    <body x-data="{ sidebarOpen: false }" class="bg-[#f8fafc] dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans h-screen flex overflow-hidden">
+    <body x-data="{ sidebarOpen: false, toasts: [] }" x-init="$watch('toasts', val => { if (val.length > 5) toasts.shift(); })" class="bg-[#f8fafc] dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans h-screen flex overflow-hidden">
 
         <!-- Mobile sidebar overlay -->
         <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-40 bg-slate-900/60 lg:hidden" @click="sidebarOpen = false" x-cloak></div>
@@ -115,6 +128,29 @@
                     </div>
                 </div>
             </header>
+
+            <!-- Toast container -->
+            <div class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none" x-cloak>
+                <template x-for="toast in toasts" :key="toast.id">
+                    <div
+                        x-show="!toast.leaving"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-x-4"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 translate-x-0"
+                        x-transition:leave-end="opacity-0 translate-x-4"
+                        class="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-white text-sm font-medium min-w-[280px] max-w-sm"
+                        :class="toast.color"
+                    >
+                        <i class="fas" :class="toast.icon"></i>
+                        <span x-text="toast.message"></span>
+                        <button @click="toast.leaving = true; setTimeout(() => { toasts = toasts.filter(t => t.id !== toast.id); }, 500)" class="ml-auto text-white/70 hover:text-white transition-colors">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                </template>
+            </div>
 
             <!-- Page content -->
             <main class="flex-1 overflow-y-auto p-6">

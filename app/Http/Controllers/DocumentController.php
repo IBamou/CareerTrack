@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Document;
 use App\Http\Requests\Document\StoreDocumentRequest;
+use App\Models\Document;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,7 +12,7 @@ class DocumentController extends Controller
     public function store(StoreDocumentRequest $request)
     {
         $file = $request->file('file');
-        $path = $file->store('documents/' . Auth::id(), 'public');
+        $path = $file->store('documents/'.Auth::id(), 'public');
         $name = $request->name ?? $file->getClientOriginalName();
 
         $document = Document::create([
@@ -40,6 +40,7 @@ class DocumentController extends Controller
     public function download(Document $document)
     {
         $this->authorize('view', $document);
+
         return Storage::disk('public')->download($document->path, $document->name);
     }
 }

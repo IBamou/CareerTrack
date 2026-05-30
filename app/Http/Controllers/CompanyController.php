@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Company\StoreCompanyRequest;
 use App\Http\Requests\Company\UpdateCompanyRequest;
 use App\Models\Company;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +16,7 @@ class CompanyController extends Controller
         $companies = Company::withCount('jobApplications')
             ->where('user_id', Auth::id())
             ->when($request->filled('q'), function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->q . '%');
+                $q->where('name', 'like', '%'.$request->q.'%');
             })
             ->latest()
             ->paginate(15)
@@ -49,17 +50,39 @@ class CompanyController extends Controller
         return redirect()->route('companies.index')->with('status', 'Company created.');
     }
 
-    public function show(Company $company)
+    public function show(Request $request, Company $company)
     {
         $this->authorize('view', $company);
 
-        $company->loadCount('jobApplications')->load(['contacts', 'documents']);
+        $company->loadCount('jobApplications')->load(['documents', 'tags']);
+        $contacts = $company->contacts()
+            ->latest()
+            ->paginate(10);
         $jobApplications = $company->jobApplications()
             ->with('company')
             ->latest()
             ->paginate(10);
 
-        return view('company.show', compact('company', 'jobApplications'));
+        $availableTags = Tag::where('user_id', Auth::id())->orderBy('name')->get();
+
+        return view('company.show', compact('company', 'contacts', 'jobApplications', 'availableTags'));
+    }
+
+    public function toggleTag(Request $request, Company $company)
+    {
+        $this->authorize('update', $company);
+
+        $request->validate(['tag_id' => 'required|exists:tags,id']);
+
+        $tag = Tag::find($request->tag_id);
+
+        if ($tag->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $company->tags()->toggle($tag->id);
+
+        return redirect()->route('companies.show', $company);
     }
 
     public function edit(Company $company)

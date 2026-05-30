@@ -18,8 +18,9 @@ class ReminderNotificationService
 
         foreach ($reminders as $reminder) {
             try {
-                if (!$reminder->user) {
+                if (! $reminder->user) {
                     $reminder->update(['status' => 'sent', 'reminded_at' => now()]);
+
                     continue;
                 }
 

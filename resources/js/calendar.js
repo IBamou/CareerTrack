@@ -1,4 +1,4 @@
-export default function (initialMonth, initialYear, initialEvents, todayStr) {
+export default function (initialMonth, initialYear, initialEvents, todayStr, interviewsList = [], applicationsList = []) {
     return {
         month: initialMonth,
         year: initialYear,
@@ -8,9 +8,25 @@ export default function (initialMonth, initialYear, initialEvents, todayStr) {
         selectedDate: '',
         selectedDayEvents: [],
         reminderFormOpen: false,
-        reminderForm: { title: '', description: '', time: '09:00' },
+        editingReminder: null,
+        reminderForm: { title: '', description: '', time: '09:00', remindable_type: '', remindable_id: '' },
+        interviewsList,
+        applicationsList,
         dayNames: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+
+        get linkableOptions() {
+            return [
+                { id: '', type: '', label: 'None' },
+                ...this.interviewsList.map(i => ({ ...i, label: 'Interview: ' + i.label })),
+                ...this.applicationsList.map(a => ({ ...a, label: 'Application: ' + a.label })),
+            ];
+        },
+
+        get selectedLinkableType() {
+            const match = this.linkableOptions.find(o => String(o.id) === String(this.reminderForm.remindable_id));
+            return match ? match.type : '';
+        },
 
         get calendarDays() {
             const firstDay = new Date(this.year, this.month - 1, 1).getDay();
@@ -79,7 +95,8 @@ export default function (initialMonth, initialYear, initialEvents, todayStr) {
             this.selectedDate = cell.date;
             this.selectedDayEvents = cell.events || [];
             this.reminderFormOpen = false;
-            this.reminderForm = { title: '', description: '', time: '09:00' };
+            this.editingReminder = null;
+            this.reminderForm = { title: '', description: '', time: '09:00', remindable_type: '', remindable_id: '' };
             this.showModal = true;
         },
 
@@ -100,17 +117,54 @@ export default function (initialMonth, initialYear, initialEvents, todayStr) {
             });
         },
 
+        editReminder(event) {
+            this.editingReminder = event;
+            this.reminderForm = {
+                title: event.title,
+                description: event.description || '',
+                time: event.time || '09:00',
+                remindable_type: event.remindable_type || '',
+                remindable_id: event.remindable_id || '',
+            };
+            this.reminderFormOpen = true;
+        },
+
+        cancelEdit() {
+            this.editingReminder = null;
+            this.reminderForm = { title: '', description: '', time: '09:00', remindable_type: '', remindable_id: '' };
+            this.reminderFormOpen = false;
+        },
+
         submitReminder() {
             const remindAt = this.selectedDate + ' ' + (this.reminderForm.time || '09:00') + ':00';
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+            if (this.editingReminder) {
+                this.updateReminder(remindAt, csrfToken);
+            } else {
+                this.createReminder(remindAt, csrfToken);
+            }
+        },
+
+        createReminder(remindAt, csrfToken) {
+            const remindableType = this.selectedLinkableType;
+            const remindableId = this.reminderForm.remindable_id;
+
+            const payload = {
+                title: this.reminderForm.title,
+                description: this.reminderForm.description,
+                remind_at: remindAt,
+            };
+
+            if (remindableType && remindableId) {
+                payload.remindable_type = remindableType;
+                payload.remindable_id = remindableId;
+            }
+
             fetch('/calendar/reminders', {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({
-                    title: this.reminderForm.title,
-                    description: this.reminderForm.description,
-                    remind_at: remindAt,
-                }),
+                body: JSON.stringify(payload),
             }).then(r => {
                 if (!r.ok) {
                     return r.json().then(err => { throw new Error(JSON.stringify(err)); });
@@ -118,6 +172,10 @@ export default function (initialMonth, initialYear, initialEvents, todayStr) {
                 return r.json();
             }).then(data => {
                 if (data.success) {
+                    const linked = remindableType && remindableId
+                        ? this.linkableOptions.find(o => o.type === remindableType && String(o.id) === String(remindableId))
+                        : null;
+
                     this.selectedDayEvents.push({
                         id: data.reminder.id,
                         title: data.reminder.title,
@@ -127,13 +185,83 @@ export default function (initialMonth, initialYear, initialEvents, todayStr) {
                         type: 'reminder',
                         url: null,
                         company: null,
+                        remindable_type: data.reminder.remindable_type || null,
+                        remindable_id: data.reminder.remindable_id || null,
+                        remindable_label: linked ? linked.label : null,
                     });
                     this.reminderFormOpen = false;
-                    this.reminderForm = { title: '', description: '', time: '09:00' };
+                    this.reminderForm = { title: '', description: '', time: '09:00', remindable_type: '', remindable_id: '' };
                     this._fetch();
                 }
             }).catch(err => {
                 alert('Error saving reminder: ' + err.message);
+            });
+        },
+
+        updateReminder(remindAt, csrfToken) {
+            const remindableType = this.selectedLinkableType;
+            const remindableId = this.reminderForm.remindable_id;
+
+            const payload = {
+                title: this.reminderForm.title,
+                description: this.reminderForm.description,
+                remind_at: remindAt,
+            };
+
+            if (remindableType && remindableId) {
+                payload.remindable_type = remindableType;
+                payload.remindable_id = remindableId;
+            }
+
+            fetch(`/calendar/reminders/${this.editingReminder.id}`, {
+                method: 'PUT',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(payload),
+            }).then(r => {
+                if (!r.ok) {
+                    return r.json().then(err => { throw new Error(JSON.stringify(err)); });
+                }
+                return r.json();
+            }).then(data => {
+                if (data.success) {
+                    const linked = remindableType && remindableId
+                        ? this.linkableOptions.find(o => o.type === remindableType && String(o.id) === String(remindableId))
+                        : null;
+
+                    const idx = this.selectedDayEvents.findIndex(e => e.id === this.editingReminder.id && e.type === 'reminder');
+                    if (idx !== -1) {
+                        this.selectedDayEvents[idx] = {
+                            ...this.selectedDayEvents[idx],
+                            title: data.reminder.title,
+                            description: data.reminder.description,
+                            time: this.reminderForm.time || '09:00',
+                            remindable_type: data.reminder.remindable_type || null,
+                            remindable_id: data.reminder.remindable_id || null,
+                            remindable_label: linked ? linked.label : null,
+                        };
+                    }
+                    this.editingReminder = null;
+                    this.reminderFormOpen = false;
+                    this.reminderForm = { title: '', description: '', time: '09:00', remindable_type: '', remindable_id: '' };
+                    this._fetch();
+                }
+            }).catch(err => {
+                alert('Error updating reminder: ' + err.message);
+            });
+        },
+
+        deleteReminder(event) {
+            if (!confirm('Delete this reminder?')) return;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            fetch(`/calendar/reminders/${event.id}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            }).then(r => {
+                if (r.ok) {
+                    this.selectedDayEvents = this.selectedDayEvents.filter(e => !(e.id === event.id && e.type === 'reminder'));
+                    this._fetch();
+                }
             });
         },
     };

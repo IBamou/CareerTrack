@@ -16,6 +16,9 @@
                 <p class="text-slate-500 dark:text-slate-400 mt-1">Track your scheduled interviews.</p>
             </div>
             <div class="flex items-center gap-4">
+                <a href="{{ route('interviews.archives') }}" class="px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-2 text-sm shadow-sm">
+                    <i class="fas fa-archive text-xs"></i> Archived
+                </a>
                 <a href="{{ route('interviews.create') }}" class="bg-[#2563eb] text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2 text-sm shadow-sm">
                     <i class="fas fa-plus"></i> Add Interview
                 </a>

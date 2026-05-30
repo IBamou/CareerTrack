@@ -12,7 +12,6 @@ use App\Models\JobApplication;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class JobApplicationController extends Controller
 {
@@ -30,9 +29,9 @@ class JobApplicationController extends Controller
             })
             ->when($request->filled('q'), function ($q) use ($request) {
                 $q->where(function ($query) use ($request) {
-                    $query->where('job_title', 'like', '%' . $request->q . '%')
+                    $query->where('job_title', 'like', '%'.$request->q.'%')
                         ->orWhereHas('company', function ($cq) use ($request) {
-                            $cq->where('name', 'like', '%' . $request->q . '%');
+                            $cq->where('name', 'like', '%'.$request->q.'%');
                         });
                 });
             })
@@ -66,7 +65,7 @@ class JobApplicationController extends Controller
             ->with('company')
             ->orderBy('updated_at', 'desc')
             ->get()
-            ->groupBy(fn($app) => $app->status->value);
+            ->groupBy(fn ($app) => $app->status->value);
 
         return view('jobApplication.kanban', compact('applications'));
     }
@@ -94,14 +93,14 @@ class JobApplicationController extends Controller
     {
         $validated = $request->validated();
         $validated['applied_by'] = Auth::id();
-        $validated['links'] ??= [];
+        $validated['links'] = collect($validated['links'] ?? [])->mapWithKeys(fn ($link) => [$link['label'] => $link['url']])->all();
         $validated['notes'] ??= '';
         $validated['location_city'] ??= '';
 
         if (filled($request->new_company_name)) {
             $company = Company::firstOrCreate(
-                ['name' => $request->new_company_name],
-                ['user_id' => Auth::id(), 'location' => ''],
+                ['name' => $request->new_company_name, 'user_id' => Auth::id()],
+                ['location' => ''],
             );
             $validated['company_id'] = $company->id;
         }
@@ -116,7 +115,7 @@ class JobApplicationController extends Controller
 
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
-                $path = $file->store('documents/' . Auth::id(), 'public');
+                $path = $file->store('documents/'.Auth::id(), 'public');
                 Document::create([
                     'user_id' => Auth::id(),
                     'documentable_type' => get_class($application),
@@ -132,13 +131,27 @@ class JobApplicationController extends Controller
         return redirect()->route('job-applications.show', $application);
     }
 
-    public function show(JobApplication $jobApplication)
+    public function show(Request $request, JobApplication $jobApplication)
     {
         $this->authorize('view', $jobApplication);
 
-        $jobApplication->load(['interviews', 'documents', 'activities']);
+        $jobApplication->load('tags');
 
-        return view('jobApplication.show', compact('jobApplication'));
+        $interviews = $jobApplication->interviews()
+            ->orderBy('scheduled_at', 'desc')
+            ->paginate(10, ['*'], 'interviews_page');
+
+        $documents = $jobApplication->documents()
+            ->latest()
+            ->paginate(10, ['*'], 'documents_page');
+
+        $activities = $jobApplication->activities()
+            ->orderBy('created_at', 'desc')
+            ->paginate(10, ['*'], 'activities_page');
+
+        $availableTags = Tag::where('user_id', Auth::id())->orderBy('name')->get();
+
+        return view('jobApplication.show', compact('jobApplication', 'interviews', 'documents', 'activities', 'availableTags'));
     }
 
     public function edit(JobApplication $jobApplication)
@@ -156,14 +169,14 @@ class JobApplicationController extends Controller
         $this->authorize('update', $jobApplication);
 
         $validated = $request->validated();
-        $validated['links'] ??= [];
+        $validated['links'] = collect($validated['links'] ?? [])->mapWithKeys(fn ($link) => [$link['label'] => $link['url']])->all();
         $validated['notes'] ??= '';
         $validated['location_city'] ??= '';
 
         if (filled($request->new_company_name)) {
             $company = Company::firstOrCreate(
-                ['name' => $request->new_company_name],
-                ['user_id' => Auth::id(), 'location' => ''],
+                ['name' => $request->new_company_name, 'user_id' => Auth::id()],
+                ['location' => ''],
             );
             $validated['company_id'] = $company->id;
         }
@@ -186,7 +199,31 @@ class JobApplicationController extends Controller
         $validated = $request->validated();
         $jobApplication->update($validated);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => $jobApplication->status->value,
+                'label' => $jobApplication->status->label(),
+            ]);
+        }
+
         return redirect()->route('job-applications.show', ['jobApplication' => $jobApplication->id]);
+    }
+
+    public function toggleTag(Request $request, JobApplication $jobApplication)
+    {
+        $this->authorize('update', $jobApplication);
+
+        $request->validate(['tag_id' => 'required|exists:tags,id']);
+
+        $tag = Tag::find($request->tag_id);
+
+        if ($tag->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $jobApplication->tags()->toggle($tag->id);
+
+        return redirect()->route('job-applications.show', $jobApplication);
     }
 
     public function archive(JobApplication $jobApplication)
@@ -223,7 +260,7 @@ class JobApplicationController extends Controller
         $action = $request->input('bulk_action');
         $userId = Auth::id();
 
-        if (empty($ids) || !$action) {
+        if (empty($ids) || ! $action) {
             return redirect()->route('job-applications.index');
         }
 
@@ -239,7 +276,7 @@ class JobApplicationController extends Controller
             }
         } elseif ($action === 'change_status' && $request->filled('bulk_status')) {
             $validStatuses = array_column(JobApplicationStatus::cases(), 'value');
-            if (!in_array($request->bulk_status, $validStatuses, true)) {
+            if (! in_array($request->bulk_status, $validStatuses, true)) {
                 return redirect()->route('job-applications.index');
             }
             foreach ($applications as $app) {
@@ -252,6 +289,40 @@ class JobApplicationController extends Controller
         return redirect()->route('job-applications.index');
     }
 
+    public function addLink(Request $request, JobApplication $jobApplication)
+    {
+        $this->authorize('update', $jobApplication);
+
+        $validated = $request->validate([
+            'label' => 'required|string|max:255',
+            'url' => 'required|url:http,https',
+        ]);
+
+        $links = $jobApplication->links ?? [];
+        $links[$validated['label']] = $validated['url'];
+        $jobApplication->update(['links' => $links]);
+
+        return redirect()->route('job-applications.show', $jobApplication)
+            ->with('status', 'Link added.');
+    }
+
+    public function deleteLink(Request $request, JobApplication $jobApplication)
+    {
+        $this->authorize('update', $jobApplication);
+
+        $validated = $request->validate(['key' => 'required|string']);
+
+        $links = $jobApplication->links ?? [];
+
+        if (array_key_exists($validated['key'], $links)) {
+            unset($links[$validated['key']]);
+            $jobApplication->update(['links' => $links]);
+        }
+
+        return redirect()->route('job-applications.show', $jobApplication)
+            ->with('status', 'Link removed.');
+    }
+
     public function export()
     {
         $applications = JobApplication::where('applied_by', Auth::id())
@@ -259,7 +330,7 @@ class JobApplicationController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'job-applications-' . now()->format('Y-m-d') . '.csv';
+        $filename = 'job-applications-'.now()->format('Y-m-d').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",

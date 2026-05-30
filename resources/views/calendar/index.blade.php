@@ -4,7 +4,7 @@
     <div class="p-4 lg:p-6">
         <div class="max-w-7xl mx-auto">
             <div
-                x-data="calendar({{ $month }}, {{ $year }}, {{ Illuminate\Support\Js::from($events) }}, '{{ date('Y-m-d') }}')"
+                x-data="calendar({{ $month }}, {{ $year }}, {{ Illuminate\Support\Js::from($events) }}, '{{ date('Y-m-d') }}', {{ Illuminate\Support\Js::from($interviewsList) }}, {{ Illuminate\Support\Js::from($applicationsList) }})"
                 class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm"
             >
                 <div class="p-4 lg:p-6">
@@ -127,12 +127,21 @@
                                         <template x-if="event.description">
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="event.description"></p>
                                         </template>
+                                        <template x-if="event.remindable_label">
+                                            <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                                                Linked to: <span x-text="event.remindable_label"></span>
+                                            </p>
+                                        </template>
                                         <div class="flex items-center gap-2 mt-2">
                                             <template x-if="event.url">
                                                 <a :href="event.url" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline">View details</a>
                                             </template>
                                             <template x-if="event.type === 'reminder'">
-                                                <button @click="completeReminder(event)" class="text-xs font-medium text-green-600 dark:text-green-400 hover:underline">Mark done</button>
+                                                <div class="flex items-center gap-2">
+                                                    <button @click="completeReminder(event)" class="text-xs font-medium text-green-600 dark:text-green-400 hover:underline">Mark done</button>
+                                                    <button @click="editReminder(event)" class="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline">Edit</button>
+                                                    <button @click="deleteReminder(event)" class="text-xs font-medium text-red-600 dark:text-red-400 hover:underline">Delete</button>
+                                                </div>
                                             </template>
                                         </div>
                                     </div>
@@ -160,11 +169,20 @@
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time</label>
                                         <input type="time" x-model="reminderForm.time" class="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent dark:text-gray-300">
                                     </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Link to (optional)</label>
+                                        <select x-model="reminderForm.remindable_id" class="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#2563eb] focus:border-transparent dark:text-gray-300">
+                                            <template x-for="opt in linkableOptions" :key="opt.type + opt.id">
+                                                <option :value="opt.id" x-text="opt.label"></option>
+                                            </template>
+                                        </select>
+                                    </div>
                                     <div class="flex items-center gap-2 pt-1">
-                                        <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                            Save Reminder
+                                        <button type="submit" class="px-4 py-2 bg-[#2563eb] hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                            <span x-show="!editingReminder">Save Reminder</span>
+                                            <span x-show="editingReminder">Update Reminder</span>
                                         </button>
-                                        <button type="button" @click="reminderFormOpen = false" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                                        <button type="button" @click="cancelEdit" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                                             Cancel
                                         </button>
                                     </div>

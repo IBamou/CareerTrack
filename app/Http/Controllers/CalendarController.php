@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Reminder\StoreReminderRequest;
+use App\Http\Requests\Reminder\UpdateReminderRequest;
 use App\Models\Interview;
 use App\Models\JobApplication;
 use App\Models\Reminder;
@@ -17,8 +19,39 @@ class CalendarController extends Controller
         $year = now()->year;
 
         $events = $this->getEvents($month, $year);
+        $interviewsList = $this->getInterviewsList();
+        $applicationsList = $this->getApplicationsList();
 
-        return view('calendar.index', compact('events', 'month', 'year'));
+        return view('calendar.index', compact('events', 'month', 'year', 'interviewsList', 'applicationsList'));
+    }
+
+    private function getInterviewsList(): array
+    {
+        return Interview::with('jobApplication.company')
+            ->where('user_id', Auth::id())
+            ->whereNotNull('scheduled_at')
+            ->get()
+            ->map(fn ($i) => [
+                'id' => $i->id,
+                'label' => ($i->jobApplication?->job_title ?? 'Interview').' — '.($i->jobApplication?->company?->name ?? 'No company'),
+                'type' => 'App\Models\Interview',
+            ])
+            ->values()
+            ->toArray();
+    }
+
+    private function getApplicationsList(): array
+    {
+        return JobApplication::with('company')
+            ->where('applied_by', Auth::id())
+            ->get()
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'label' => $a->job_title.' — '.($a->company?->name ?? 'No company'),
+                'type' => 'App\Models\JobApplication',
+            ])
+            ->values()
+            ->toArray();
     }
 
     public function events(Request $request)
@@ -56,18 +89,18 @@ class CalendarController extends Controller
             ->where('applied_by', $userId)
             ->where(function ($q) use ($startOfMonth, $endOfMonth) {
                 $q->whereDate('applied_at', '>=', $startOfMonth)
-                  ->whereDate('applied_at', '<=', $endOfMonth)
-                  ->orWhere(function ($q2) use ($startOfMonth, $endOfMonth) {
-                      $q2->whereNotNull('next_follow_up_at')
-                         ->whereDate('next_follow_up_at', '>=', $startOfMonth)
-                         ->whereDate('next_follow_up_at', '<=', $endOfMonth);
-                  });
+                    ->whereDate('applied_at', '<=', $endOfMonth)
+                    ->orWhere(function ($q2) use ($startOfMonth, $endOfMonth) {
+                        $q2->whereNotNull('next_follow_up_at')
+                            ->whereDate('next_follow_up_at', '>=', $startOfMonth)
+                            ->whereDate('next_follow_up_at', '<=', $endOfMonth);
+                    });
             })
             ->get()
             ->flatMap(fn ($a) => collect([
                 $a->applied_at && $a->applied_at->between($startOfMonth, $endOfMonth) ? [
                     'id' => $a->id,
-                    'title' => 'Applied: ' . $a->job_title,
+                    'title' => 'Applied: '.$a->job_title,
                     'company' => optional($a->company)->name,
                     'date' => $a->applied_at->format('Y-m-d'),
                     'time' => null,
@@ -76,7 +109,7 @@ class CalendarController extends Controller
                 ] : null,
                 $a->next_follow_up_at && $a->next_follow_up_at->between($startOfMonth, $endOfMonth) ? [
                     'id' => $a->id,
-                    'title' => 'Follow up: ' . $a->job_title,
+                    'title' => 'Follow up: '.$a->job_title,
                     'company' => optional($a->company)->name,
                     'date' => $a->next_follow_up_at->format('Y-m-d'),
                     'time' => null,
@@ -100,6 +133,9 @@ class CalendarController extends Controller
                 'time' => $r->remind_at->format('H:i'),
                 'type' => 'reminder',
                 'url' => null,
+                'remindable_type' => $r->remindable_type,
+                'remindable_id' => $r->remindable_id,
+                'remindable_label' => $r->remindable ? $this->getRemindableLabel($r->remindable) : null,
             ]);
 
         $grouped = collect($interviews)
@@ -116,20 +152,16 @@ class CalendarController extends Controller
         return $grouped;
     }
 
-    public function storeReminder(Request $request)
+    public function storeReminder(StoreReminderRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'remind_at' => 'required|date',
-        ]);
-
         $reminder = Reminder::create([
             'user_id' => Auth::id(),
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?? null,
-            'remind_at' => $validated['remind_at'],
+            'title' => $request->title,
+            'description' => $request->description,
+            'remind_at' => $request->remind_at,
             'status' => 'pending',
+            'remindable_type' => $request->remindable_type,
+            'remindable_id' => $request->remindable_id,
         ]);
 
         return response()->json([
@@ -138,18 +170,65 @@ class CalendarController extends Controller
                 'id' => $reminder->id,
                 'title' => $reminder->title,
                 'description' => $reminder->description,
+                'remind_at' => $reminder->remind_at->format('Y-m-d H:i'),
+                'remindable_type' => $reminder->remindable_type,
+                'remindable_id' => $reminder->remindable_id,
+            ],
+        ]);
+    }
+
+    public function updateReminder(UpdateReminderRequest $request, Reminder $reminder)
+    {
+        $this->authorize('update', $reminder);
+
+        $reminder->update($request->only(['title', 'description', 'remind_at', 'remindable_type', 'remindable_id']));
+
+        return response()->json([
+            'success' => true,
+            'reminder' => [
+                'id' => $reminder->id,
+                'title' => $reminder->title,
+                'description' => $reminder->description,
+                'remind_at' => $reminder->remind_at->format('Y-m-d H:i'),
+                'remindable_type' => $reminder->remindable_type,
+                'remindable_id' => $reminder->remindable_id,
             ],
         ]);
     }
 
     public function completeReminder(Reminder $reminder)
     {
-        if ($reminder->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('update', $reminder);
 
         $reminder->update(['status' => 'sent', 'reminded_at' => now()]);
 
         return response()->json(['success' => true]);
+    }
+
+    public function destroyReminder(Reminder $reminder)
+    {
+        $this->authorize('delete', $reminder);
+
+        $reminder->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    private function getRemindableLabel($remindable): ?string
+    {
+        if ($remindable instanceof Interview) {
+            $jobTitle = $remindable->jobApplication?->job_title ?? 'Interview';
+            $company = $remindable->jobApplication?->company?->name;
+
+            return $company ? "{$jobTitle} at {$company}" : $jobTitle;
+        }
+
+        if ($remindable instanceof JobApplication) {
+            $company = $remindable->company?->name;
+
+            return $company ? "{$remindable->job_title} at {$company}" : $remindable->job_title;
+        }
+
+        return null;
     }
 }

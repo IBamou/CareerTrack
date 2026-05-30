@@ -9,7 +9,7 @@ class DocumentPolicy
 {
     public function view(User $user, Document $document): bool
     {
-        return $user->id === $document->user_id;
+        return $user->is($document->user);
     }
 
     public function create(User $user): bool
@@ -19,6 +19,6 @@ class DocumentPolicy
 
     public function delete(User $user, Document $document): bool
     {
-        return $user->id === $document->user_id;
+        return $user->is($document->user);
     }
 }

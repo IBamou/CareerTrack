@@ -6,6 +6,7 @@ use App\Http\Requests\Interview\StoreInterviewRequest;
 use App\Http\Requests\Interview\UpdateInterviewRequest;
 use App\Models\Interview;
 use App\Models\JobApplication;
+use App\Models\Reminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,12 +18,12 @@ class InterviewController extends Controller
             ->where('user_id', Auth::id())
             ->when($request->filled('q'), function ($q) use ($request) {
                 $q->where(function ($query) use ($request) {
-                    $query->where('type', 'like', '%' . $request->q . '%')
-                        ->orWhere('notes', 'like', '%' . $request->q . '%')
+                    $query->where('type', 'like', '%'.$request->q.'%')
+                        ->orWhere('notes', 'like', '%'.$request->q.'%')
                         ->orWhereHas('jobApplication', function ($jq) use ($request) {
-                            $jq->where('job_title', 'like', '%' . $request->q . '%')
+                            $jq->where('job_title', 'like', '%'.$request->q.'%')
                                 ->orWhereHas('company', function ($cq) use ($request) {
-                                    $cq->where('name', 'like', '%' . $request->q . '%');
+                                    $cq->where('name', 'like', '%'.$request->q.'%');
                                 });
                         });
                 });
@@ -66,7 +67,13 @@ class InterviewController extends Controller
     {
         $this->authorize('view', $interview);
 
-        return view('interview.show', compact('interview'));
+        $reminders = Reminder::where('user_id', Auth::id())
+            ->where('remindable_type', Interview::class)
+            ->where('remindable_id', $interview->id)
+            ->orderBy('remind_at')
+            ->get();
+
+        return view('interview.show', compact('interview', 'reminders'));
     }
 
     public function edit(Interview $interview)

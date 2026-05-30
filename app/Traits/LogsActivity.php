@@ -23,7 +23,9 @@ trait LogsActivity
 
     protected function logActivity(string $event): void
     {
-        if (!Auth::check()) return;
+        if (! Auth::check()) {
+            return;
+        }
 
         $oldValues = match ($event) {
             'updated' => $this->getOriginal(),
@@ -65,7 +67,8 @@ trait LogsActivity
 
     protected static function getActivityDescription(string $event, $model): ?string
     {
-        $name = method_exists($model, 'activityDisplayName') ? $model->activityDisplayName() : ($model->name ?? $model->title ?? "{$event} " . class_basename($model));
+        $name = method_exists($model, 'activityDisplayName') ? $model->activityDisplayName() : ($model->name ?? $model->title ?? "{$event} ".class_basename($model));
+
         return match ($event) {
             'created' => "Created {$name}",
             'updated' => "Updated {$name}",

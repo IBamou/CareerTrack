@@ -4,11 +4,9 @@ namespace App\Policies;
 
 use App\Models\JobApplication;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class JobApplicationPolicy
 {
-
     public function create(User $user): bool
     {
         return true;
@@ -27,12 +25,12 @@ class JobApplicationPolicy
      */
     public function update(User $user, JobApplication $jobApplication): bool
     {
-        return  $user->is($jobApplication->appliedBy);
+        return $user->is($jobApplication->appliedBy);
     }
 
     public function archive(User $user, JobApplication $jobApplication): bool
     {
-        return  $user->is($jobApplication->appliedBy);
+        return $user->is($jobApplication->appliedBy);
     }
 
     public function delete(User $user, JobApplication $jobApplication): bool
@@ -45,7 +43,7 @@ class JobApplicationPolicy
      */
     public function restore(User $user, JobApplication $jobApplication): bool
     {
-        return  $user->is($jobApplication->appliedBy);
+        return $user->is($jobApplication->appliedBy);
     }
 
     /**
@@ -53,6 +51,6 @@ class JobApplicationPolicy
      */
     public function forceDelete(User $user, JobApplication $jobApplication): bool
     {
-        return  $user->is($jobApplication->appliedBy);
+        return $user->is($jobApplication->appliedBy);
     }
 }

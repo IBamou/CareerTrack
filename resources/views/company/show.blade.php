@@ -124,28 +124,35 @@
         </x-section-card>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <x-section-card title="Contacts">
-                @if ($company->contacts->isNotEmpty())
-                    <div class="space-y-2">
-                        @foreach ($company->contacts as $contact)
-                            <a href="{{ route('contacts.show', $contact) }}" class="flex items-center gap-3 p-3 -mx-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-                                <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-[#2563eb] dark:text-blue-400 text-sm font-semibold flex-shrink-0">
-                                    {{ strtoupper(substr($contact->name, 0, 1)) }}
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-[#2563eb] dark:group-hover:text-blue-400 transition-colors">{{ $contact->name }}</p>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ $contact->role ?? 'No role' }} @if ($contact->email) &middot; {{ $contact->email }} @endif</p>
-                                </div>
-                                <i class="fas fa-chevron-right text-slate-400 group-hover:text-[#2563eb] transition-colors text-xs flex-shrink-0"></i>
-                            </a>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="flex flex-col items-center justify-center py-6 text-center">
-                        <i class="fas fa-user-friends text-3xl text-slate-300 dark:text-slate-600 mb-2"></i>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">No contacts yet</p>
-                    </div>
-                @endif
+            <x-section-card title="Contacts" class="flex flex-col">
+                <div class="flex-1">
+                    @if ($contacts->isNotEmpty())
+                        <div class="space-y-2">
+                            @foreach ($contacts as $contact)
+                                <a href="{{ route('contacts.show', $contact) }}" class="flex items-center gap-3 p-3 -mx-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-[#2563eb] dark:text-blue-400 text-sm font-semibold flex-shrink-0">
+                                        {{ strtoupper(substr($contact->name, 0, 1)) }}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-[#2563eb] dark:group-hover:text-blue-400 transition-colors">{{ $contact->name }}</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ $contact->role ?? 'No role' }} @if ($contact->email) &middot; {{ $contact->email }} @endif</p>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-slate-400 group-hover:text-[#2563eb] transition-colors text-xs flex-shrink-0"></i>
+                                </a>
+                            @endforeach
+                        </div>
+                        @if ($contacts->hasPages())
+                            <div class="pt-3 mt-2 border-t border-slate-100 dark:border-slate-700">
+                                {{ $contacts->links() }}
+                            </div>
+                        @endif
+                    @else
+                        <div class="flex flex-col items-center justify-center py-6 text-center">
+                            <i class="fas fa-user-friends text-3xl text-slate-300 dark:text-slate-600 mb-2"></i>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">No contacts yet</p>
+                        </div>
+                    @endif
+                </div>
                 <div class="pt-3 mt-2 border-t border-slate-100 dark:border-slate-700">
                     <a href="{{ route('contacts.create') }}?company_id={{ $company->id }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-[#2563eb] dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
                         <i class="fas fa-plus text-xs"></i>

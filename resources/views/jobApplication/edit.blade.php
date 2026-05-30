@@ -22,7 +22,26 @@
             </div>
         </header>
 
-        <form method="POST" action="{{ route('job-applications.update', $jobApplication) }}" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" action="{{ route('job-applications.update', $jobApplication) }}" enctype="multipart/form-data" class="space-y-6" x-data="{
+            fields: {
+                job_title: '{{ old('job_title', $jobApplication->job_title) }}',
+                status: '{{ old('status', $jobApplication->status->value) }}',
+            },
+            errors: {},
+            validate(field) {
+                if (field === 'job_title' && !this.fields.job_title.trim()) {
+                    this.errors.job_title = 'Job title is required.';
+                } else if (field === 'job_title') {
+                    delete this.errors.job_title;
+                }
+                if (field === 'status' && !this.fields.status) {
+                    this.errors.status = 'Please select a status.';
+                } else if (field === 'status') {
+                    delete this.errors.status;
+                }
+            },
+            valid(field) { return !this.errors[field] && this.fields[field] && this.fields[field].toString().trim(); }
+        }">
             @csrf
             @method('PUT')
 
@@ -34,7 +53,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="job_title" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Job Title <span class="text-red-500">*</span></label>
-                        <input type="text" id="job_title" name="job_title" value="{{ old('job_title', $jobApplication->job_title) }}" required placeholder="e.g. Backend Developer" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
+                        <input type="text" id="job_title" name="job_title" x-model="fields.job_title" @blur="validate('job_title')" required placeholder="e.g. Backend Developer"
+                            class="w-full px-3.5 py-2 rounded-lg border text-sm transition outline-none"
+                            :class="errors.job_title ? 'border-red-400 dark:border-red-500 bg-red-50 dark:bg-red-900/10' : (valid('job_title') ? 'border-emerald-400 dark:border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10' : 'border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]')">
+                        <template x-if="errors.job_title">
+                            <p class="text-xs text-red-500 mt-1" x-text="errors.job_title"></p>
+                        </template>
                         @error('job_title') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
@@ -51,11 +75,16 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="status" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Pipeline Status <span class="text-red-500">*</span></label>
-                        <select id="status" name="status" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition cursor-pointer">
+                        <select id="status" name="status" x-model="fields.status" @change="validate('status')"
+                            class="w-full px-3.5 py-2 rounded-lg border bg-white dark:bg-slate-900 dark:text-slate-300 text-sm transition cursor-pointer outline-none"
+                            :class="errors.status ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-600 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]'">
                             @foreach (\App\Enums\JobApplicationStatus::cases() as $s)
                                 <option value="{{ $s->value }}" {{ old('status', $jobApplication->status->value) === $s->value ? 'selected' : '' }}>{{ $s->label() }}</option>
                             @endforeach
                         </select>
+                        <template x-if="errors.status">
+                            <p class="text-xs text-red-500 mt-1" x-text="errors.status"></p>
+                        </template>
                         @error('status') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
@@ -75,17 +104,34 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="links_job" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Job Post URL</label>
-                        <input type="url" id="links_job" name="links[job_posting]" value="{{ old('links.job_posting', $jobApplication->links['job_posting'] ?? '') }}" placeholder="https://linkedin.com/jobs/..." class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
-                        @error('links.job_posting') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                <div x-data="{
+                    links: {{ json_encode(
+                        collect($jobApplication->links ?? [])->map(fn($url, $label) => ['label' => $label, 'url' => $url])->values()->toArray()
+                    ) }},
+                    addLink() { this.links.push({ label: '', url: '' }) },
+                    removeLink(index) { this.links.splice(index, 1) }
+                }">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">Links</label>
+                        <button type="button" @click="addLink()" class="text-xs font-medium text-[#2563eb] dark:text-blue-400 hover:text-blue-700 flex items-center gap-1">
+                            <i class="fas fa-plus text-[10px]"></i> Add Link
+                        </button>
                     </div>
-                    <div>
-                        <label for="applied_at" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date Applied</label>
-                        <input type="date" id="applied_at" name="applied_at" value="{{ old('applied_at', $jobApplication->applied_at?->format('Y-m-d')) }}" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
-                        @error('applied_at') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
-                    </div>
+                    <template x-for="(link, index) in links" :key="index">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="text" x-model="link.label" :name="'links[' + index + '][label]'" placeholder="Label (e.g. LinkedIn)" class="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition placeholder:text-slate-400" required>
+                            <input type="url" x-model="link.url" :name="'links[' + index + '][url]'" placeholder="https://..." class="flex-[2] px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition placeholder:text-slate-400" required>
+                            <button type="button" @click="removeLink(index)" class="text-red-400 hover:text-red-600 text-sm p-1.5 flex-shrink-0">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </template>
+                    <p x-show="links.length === 0" class="text-xs text-slate-400 dark:text-slate-500 italic">No links added yet.</p>
+                </div>
+                <div>
+                    <label for="applied_at" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date Applied</label>
+                    <input type="date" id="applied_at" name="applied_at" value="{{ old('applied_at', $jobApplication->applied_at?->format('Y-m-d')) }}" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none text-sm transition">
+                    @error('applied_at') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
