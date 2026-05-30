@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\JobApplicationStatus;
 use App\Enums\JobLocationType;
 use App\Traits\LogsActivity;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Database\Factories\JobApplicationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,11 +12,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JobApplication extends Model
 {
     /** @use HasFactory<JobApplicationFactory> */
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = ['job_title', 'salary_min', 'salary_max', 'currency', 'benefits', 'location_type', 'location_city', 'links', 'status', 'priority', 'applied_at', 'next_follow_up_at',  'notes', 'company_id', 'applied_by'];
 
@@ -54,6 +54,11 @@ class JobApplication extends Model
     public function documents(): MorphMany
     {
         return $this->morphMany(Document::class, 'documentable');
+    }
+
+    public function reminders(): MorphMany
+    {
+        return $this->morphMany(Reminder::class, 'remindable');
     }
 
     public function activities(): MorphMany

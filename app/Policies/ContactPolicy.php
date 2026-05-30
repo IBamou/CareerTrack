@@ -9,7 +9,7 @@ class ContactPolicy
 {
     public function view(User $user, Contact $contact): bool
     {
-        return $user->id === $contact->user_id;
+        return $user->is($contact->user);
     }
 
     public function create(User $user): bool
@@ -19,21 +19,21 @@ class ContactPolicy
 
     public function update(User $user, Contact $contact): bool
     {
-        return $user->id === $contact->user_id;
+        return $user->is($contact->user);
     }
 
     public function delete(User $user, Contact $contact): bool
     {
-        return $user->id === $contact->user_id;
+        return $user->is($contact->user);
     }
 
     public function restore(User $user, Contact $contact): bool
     {
-        return $user->id === $contact->user_id;
+        return $user->is($contact->user);
     }
 
     public function forceDelete(User $user, Contact $contact): bool
     {
-        return $user->id === $contact->user_id;
+        return $user->is($contact->user);
     }
 }

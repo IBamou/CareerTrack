@@ -2,10 +2,10 @@
     <x-slot name="header">Search</x-slot>
 
     <div class="max-w-3xl mx-auto">
-        <form method="GET" action="{{ route('search') }}" class="mb-6">
+        <form method="GET" action="{{ route('search') }}" class="mb-6" x-data="{ q: '{{ $query }}' }">
             <div class="relative">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" name="q" value="{{ $query }}" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-12 pr-24 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#2563eb] dark:focus:border-blue-500 focus:ring-2 focus:ring-[#2563eb]/10 outline-none transition-all" placeholder="Search applications, companies, interviews..." autofocus />
+                <input type="text" name="q" x-model="q" x-on:input.debounce.500ms="$el.form.requestSubmit()" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-12 pr-24 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#2563eb] dark:focus:border-blue-500 focus:ring-2 focus:ring-[#2563eb]/10 outline-none transition-all" placeholder="Search applications, companies, interviews..." autofocus />
                 <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-[#2563eb] hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">Search</button>
             </div>
         </form>

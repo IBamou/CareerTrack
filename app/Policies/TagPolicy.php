@@ -9,7 +9,7 @@ class TagPolicy
 {
     public function view(User $user, Tag $tag): bool
     {
-        return $user->id === $tag->user_id;
+        return $user->is($tag->user);
     }
 
     public function create(User $user): bool
@@ -19,11 +19,11 @@ class TagPolicy
 
     public function update(User $user, Tag $tag): bool
     {
-        return $user->id === $tag->user_id;
+        return $user->is($tag->user);
     }
 
     public function delete(User $user, Tag $tag): bool
     {
-        return $user->id === $tag->user_id;
+        return $user->is($tag->user);
     }
 }

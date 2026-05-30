@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('job_title');
             $table->string('location_type');
             $table->string('location_city')->default(null);
-            $table->json('links');
+            $table->json('links')->nullable();
             $table->string('status')->default('applied');
             $table->timestamp('applied_at')->nullable();
             $table->dateTime('next_follow_up_at')->nullable();
-            $table->text('notes');
+            $table->text('notes')->nullable();
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
             $table->foreignId('applied_by')->constrained('users')->onDelete('cascade');
             $table->softDeletes();

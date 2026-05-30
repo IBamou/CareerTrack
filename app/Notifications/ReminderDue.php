@@ -6,10 +6,11 @@ use App\Models\Interview;
 use App\Models\JobApplication;
 use App\Models\Reminder;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ReminderDue extends Notification
+class ReminderDue extends Notification implements ShouldQueue
 {
     use Queueable;
 

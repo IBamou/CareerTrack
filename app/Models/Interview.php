@@ -4,16 +4,16 @@ namespace App\Models;
 
 use App\Traits\LogsActivity;
 use Database\Factories\InterviewFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Interview extends Model
 {
     /** @use HasFactory<InterviewFactory> */
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = ['job_application_id', 'type', 'scheduled_at', 'notes', 'result', 'user_id'];
 
@@ -34,6 +34,11 @@ class Interview extends Model
     public function documents(): MorphMany
     {
         return $this->morphMany(Document::class, 'documentable');
+    }
+
+    public function reminders(): MorphMany
+    {
+        return $this->morphMany(Reminder::class, 'remindable');
     }
 
     public function activities(): MorphMany

@@ -1,8 +1,8 @@
 <?php
+
 namespace App\Http\Requests\JobApplication;
 
 use App\Enums\JobApplicationStatus;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 

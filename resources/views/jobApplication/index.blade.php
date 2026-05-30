@@ -24,6 +24,9 @@
                         <i class="fas fa-columns text-xs"></i> Board
                     </a>
                 </div>
+                <a href="{{ route('job-applications.archives') }}" class="px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-2 text-sm shadow-sm">
+                    <i class="fas fa-archive text-xs"></i> Archived
+                </a>
                 <a href="{{ route('job-applications.create') }}" class="bg-[#2563eb] text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2 text-sm shadow-sm">
                     <i class="fas fa-plus"></i> Add Application
                 </a>
@@ -72,14 +75,57 @@
                 label="Add Application"
             />
         @else
-            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
+            <form id="bulk-action-form" method="POST" action="{{ route('job-applications.bulk-action') }}" style="display: none;">
+                @csrf
+                <input type="hidden" name="bulk_action" value="">
+                <input type="hidden" name="bulk_status" value="">
+                <div id="bulk-selected-container"></div>
+            </form>
+
+            <div x-data="{
+                    selected: [],
+                    allIds: @js($jobApplications->pluck('id')->toArray()),
+                    bulkStatusValue: '',
+                    get allSelected() { return this.allIds.length > 0 && this.selected.length === this.allIds.length; },
+                    toggleAll() { this.selected = this.allSelected ? [] : [...this.allIds]; },
+                    toggle(id) { this.selected.includes(id) ? this.selected = this.selected.filter(i => i !== id) : this.selected.push(id); },
+                    submitBulk(action, status) {
+                        if (!this.selected.length) return;
+                        var form = document.getElementById('bulk-action-form');
+                        form.bulk_action.value = action;
+                        form.bulk_status.value = status || '';
+                        var container = document.getElementById('bulk-selected-container');
+                        container.innerHTML = '';
+                        this.selected.forEach(function(id) {
+                            var input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'selected[]';
+                            input.value = id;
+                            container.appendChild(input);
+                        });
+                        form.submit();
+                    }
+                }" class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
+
+                <div x-show="selected.length > 0" x-transition class="flex items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-700 text-sm">
+                    <span class="font-medium text-blue-700 dark:text-blue-300" x-text="selected.length + ' selected'"></span>
+                    <button type="button" @click="submitBulk('archive')" class="px-3 py-1 rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 font-medium text-xs">Archive</button>
+                    <select x-model="bulkStatusValue" class="border border-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 rounded-lg text-xs px-2 py-1 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none">
+                        <option value="">Change Status...</option>
+                        @foreach (\App\Enums\JobApplicationStatus::cases() as $s)
+                            <option value="{{ $s->value }}">{{ $s->label() }}</option>
+                        @endforeach
+                    </select>
+                    <button type="button" @click="if (bulkStatusValue) { submitBulk('change_status', bulkStatusValue); bulkStatusValue = ''; }" :disabled="!bulkStatusValue" class="px-3 py-1 rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 font-medium text-xs disabled:opacity-50">Apply</button>
+                </div>
+
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
                             <th class="p-4 pl-6 w-10">
-                                <input type="checkbox" class="rounded border-slate-300 dark:border-slate-600 text-[#2563eb] focus:ring-[#2563eb]">
+                                <input type="checkbox" :checked="allSelected" @change="toggleAll()" class="rounded border-slate-300 dark:border-slate-600 text-[#2563eb] focus:ring-[#2563eb]">
                             </th>
-                            <th class="p-4">Company & Position</th>
+                            <th class="p-4">Applications</th>
                             <th class="p-4">Stage</th>
                             <th class="p-4">Date Applied</th>
                             <th class="p-4">Next Event</th>
@@ -90,7 +136,7 @@
                         @foreach ($jobApplications as $app)
                             <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition">
                                 <td class="p-4 pl-6">
-                                    <input type="checkbox" class="rounded border-slate-300 dark:border-slate-600 text-[#2563eb] focus:ring-[#2563eb]">
+                                    <input type="checkbox" :checked="selected.includes({{ $app->id }})" @change="toggle({{ $app->id }})" class="rounded border-slate-300 dark:border-slate-600 text-[#2563eb] focus:ring-[#2563eb]">
                                 </td>
                                 <td class="p-4">
                                     <a href="{{ route('job-applications.show', $app) }}" class="flex items-center gap-3">

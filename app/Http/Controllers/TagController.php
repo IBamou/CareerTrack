@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tag;
 use App\Http\Requests\Tag\StoreTagRequest;
+use App\Models\Tag;
 use Illuminate\Support\Facades\Auth;
 
 class TagController extends Controller
@@ -11,6 +11,7 @@ class TagController extends Controller
     public function index()
     {
         $tags = Tag::withCount(['jobApplications', 'companies', 'contacts'])->where('user_id', Auth::id())->orderBy('name')->get();
+
         return view('tag.index', compact('tags'));
     }
 
@@ -47,9 +48,9 @@ class TagController extends Controller
 
         $tag->loadCount(['jobApplications', 'companies', 'contacts']);
         $tag->load([
-            'jobApplications' => fn($q) => $q->with('company')->latest(),
+            'jobApplications' => fn ($q) => $q->with('company')->latest(),
             'companies',
-            'contacts' => fn($q) => $q->with('company'),
+            'contacts' => fn ($q) => $q->with('company'),
         ]);
 
         return view('tag.show', compact('tag'));

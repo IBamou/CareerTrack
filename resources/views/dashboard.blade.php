@@ -63,6 +63,11 @@
                             </div>
                         </div>
                     </div>
+                    <button x-data="{ theme: localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') }" @click="theme = theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('theme', theme); document.documentElement.classList.toggle('dark', theme === 'dark')" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <i x-show="theme === 'light'" class="fas fa-moon text-lg"></i>
+                        <i x-show="theme === 'dark'" class="fas fa-sun text-lg"></i>
+                    </button>
+
                     <div x-data="{ dropdownOpen: false }" class="relative">
                         <button @click="dropdownOpen = !dropdownOpen" class="flex items-center gap-2 cursor-pointer">
                             <div class="w-8 h-8 rounded-full bg-[#2563eb] text-white flex items-center justify-center text-sm font-semibold">
@@ -212,35 +217,33 @@
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-slate-900 dark:text-white">Calendar</h2>
                         <div class="flex items-center gap-2">
-                            <button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                            <button onclick="calNav('prev')" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
                                 <i class="fas fa-chevron-left text-xs"></i>
                             </button>
-                            <span class="text-sm font-bold text-slate-800 dark:text-slate-200 w-28 text-center">{{ now()->format('F Y') }}</span>
-                            <button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                            <span id="cal-label" class="text-sm font-bold text-slate-800 dark:text-slate-200 w-28 text-center">{{ $currentMonth->format('F Y') }}</span>
+                            <button onclick="calNav('next')" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
                                 <i class="fas fa-chevron-right text-xs"></i>
                             </button>
                         </div>
                     </div>
 
-                    @php
-                        $today = now();
-                        $firstDay = $today->copy()->startOfMonth();
-                        $lastDay = $today->copy()->endOfMonth();
-                        $startOfWeek = $firstDay->copy()->startOfWeek(Carbon\Carbon::SUNDAY);
-                        $endOfWeek = $lastDay->copy()->endOfWeek(Carbon\Carbon::SATURDAY);
-                        $eventDays = $upcomingEvents->map(fn($e) => $e->scheduled_at?->format('Y-m-d'))->filter()->unique()->toArray();
-                    @endphp
-
-                    <div class="grid grid-cols-7 text-center gap-y-2">
+                    <div id="cal-grid" class="grid grid-cols-7 text-center gap-y-2">
                         @foreach (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $day)
                             <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider py-2 border-b border-slate-100 dark:border-slate-700">{{ $day }}</div>
                         @endforeach
 
+                        @php
+                            $today = now();
+                            $firstDay = $currentMonth->copy()->startOfMonth();
+                            $lastDay = $currentMonth->copy()->endOfMonth();
+                            $startOfWeek = $firstDay->copy()->startOfWeek(0);
+                            $endOfWeek = $lastDay->copy()->endOfWeek(6);
+                        @endphp
                         @for ($date = $startOfWeek; $date->lte($endOfWeek); $date->addDay())
                             @php
                                 $isToday = $date->isSameDay($today);
-                                $isCurrentMonth = $date->month === $today->month;
-                                $hasEvent = in_array($date->format('Y-m-d'), $eventDays);
+                                $isCurrentMonth = $date->month === $currentMonth->month && $date->year === $currentMonth->year;
+                                $hasEvent = in_array($date->format('Y-m-d'), $calendarEventDates);
                             @endphp
                             <div class="flex justify-center">
                                 @if ($isToday)
@@ -263,11 +266,11 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
                     <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Upcoming Events</h2>
-                    <div class="space-y-6">
+                    <div class="flex-1 flex flex-col">
                         @forelse ($upcomingEvents as $event)
-                            <div class="flex items-start justify-between">
+                            <div class="flex items-start justify-between pb-4 last:pb-0">
                                 <div class="flex items-start gap-3">
                                     <div class="w-3 h-3 rounded-full border-2 border-[#2563eb] bg-white dark:bg-slate-800 mt-1.5 flex-shrink-0"></div>
                                     <div>
@@ -275,10 +278,10 @@
                                         <div class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">{{ $event->scheduled_at?->format('M d, Y - g:i A') }}</div>
                                     </div>
                                 </div>
-                                <span class="px-3 py-1 bg-blue-50 text-[#2563eb] dark:bg-blue-500/10 dark:text-blue-400 rounded-full text-xs font-bold">{{ $event->type }}</span>
+                                <span class="px-3 py-1 bg-blue-50 text-[#2563eb] dark:bg-blue-500/10 dark:text-blue-400 rounded-full text-xs font-bold whitespace-nowrap">{{ $event->type }}</span>
                             </div>
                         @empty
-                            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+                            <div class="flex-1 flex flex-col items-center justify-center text-center py-8 text-slate-500 dark:text-slate-400">
                                 <i class="far fa-calendar-check text-3xl mb-3 text-slate-300 dark:text-slate-600"></i>
                                 <p>No upcoming events. Schedule your first interview!</p>
                             </div>
@@ -349,6 +352,29 @@
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
+        }
+
+        var calMonth = '{{ $currentMonth->format('Y-m') }}';
+        var calDaysHeaders = '';
+        var calGridEl = document.getElementById('cal-grid');
+        for (var i = 0; i < 7 && i < calGridEl.children.length; i++) {
+            calDaysHeaders += calGridEl.children[i].outerHTML;
+        }
+
+        function calNav(dir) {
+            var parts = calMonth.split('-').map(Number);
+            var d = new Date(parts[0], parts[1] - 1, 1);
+            if (dir === 'prev') d.setMonth(d.getMonth() - 1);
+            else d.setMonth(d.getMonth() + 1);
+            var y = d.getFullYear();
+            var m = String(d.getMonth() + 1).padStart(2, '0');
+            calMonth = y + '-' + m;
+            fetch('{{ route('dashboard.calendar-grid') }}?month=' + calMonth)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    document.getElementById('cal-label').textContent = data.label;
+                    document.getElementById('cal-grid').innerHTML = calDaysHeaders + data.html;
+                });
         }
     </script>
 </body>
