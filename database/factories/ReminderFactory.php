@@ -13,11 +13,18 @@ class ReminderFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
-            'title' => $this->faker->sentence(),
-            'description' => $this->faker->paragraph(),
-            'remind_at' => $this->faker->dateTimeBetween('now', '+1 month'),
+            'user_id' => fake()->randomElement(User::pluck('id')->toArray() ?: [User::factory()->create()->id]),
+            'title' => fake()->sentence(),
+            'description' => fake()->paragraph(),
+            'remind_at' => fake()->dateTimeBetween('now', '+1 month'),
             'status' => 'pending',
         ];
+    }
+
+    public function forUser(User $user): static
+    {
+        return $this->state(fn () => [
+            'user_id' => $user->id,
+        ]);
     }
 }

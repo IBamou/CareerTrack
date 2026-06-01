@@ -14,9 +14,9 @@ class DocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'user_id' => fake()->randomElement(User::pluck('id')->toArray() ?: [User::factory()->create()->id]),
             'documentable_type' => 'App\Models\JobApplication',
-            'documentable_id' => JobApplication::factory(),
+            'documentable_id' => fake()->randomElement(JobApplication::pluck('id')->toArray() ?: [JobApplication::factory()->create()->id]),
             'name' => fake()->words(3, true).'.'.fake()->fileExtension(),
             'path' => 'documents/'.fake()->uuid().'.'.fake()->fileExtension(),
             'mime_type' => fake()->randomElement(['application/pdf', 'image/png', 'image/jpeg', 'application/msword']),

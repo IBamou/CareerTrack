@@ -122,7 +122,9 @@ it('cannot archive another users company', function () {
 // Interview Archive
 
 it('can archive an interview', function () {
-    $interview = Interview::factory()->create(['user_id' => $this->user->id]);
+    $company = Company::factory()->create(['user_id' => $this->user->id]);
+    $application = JobApplication::factory()->create(['applied_by' => $this->user->id, 'company_id' => $company->id]);
+    $interview = Interview::factory()->create(['user_id' => $this->user->id, 'job_application_id' => $application->id]);
 
     $response = $this->delete(route('interviews.archive', $interview));
 
@@ -131,7 +133,9 @@ it('can archive an interview', function () {
 });
 
 it('can restore an archived interview', function () {
-    $interview = Interview::factory()->create(['user_id' => $this->user->id]);
+    $company = Company::factory()->create(['user_id' => $this->user->id]);
+    $application = JobApplication::factory()->create(['applied_by' => $this->user->id, 'company_id' => $company->id]);
+    $interview = Interview::factory()->create(['user_id' => $this->user->id, 'job_application_id' => $application->id]);
     $interview->delete();
 
     $response = $this->post(route('interviews.restore', $interview));
@@ -141,7 +145,9 @@ it('can restore an archived interview', function () {
 });
 
 it('can force delete an archived interview', function () {
-    $interview = Interview::factory()->create(['user_id' => $this->user->id]);
+    $company = Company::factory()->create(['user_id' => $this->user->id]);
+    $application = JobApplication::factory()->create(['applied_by' => $this->user->id, 'company_id' => $company->id]);
+    $interview = Interview::factory()->create(['user_id' => $this->user->id, 'job_application_id' => $application->id]);
     $interview->delete();
 
     $response = $this->delete(route('interviews.forceDelete', $interview));
@@ -152,7 +158,9 @@ it('can force delete an archived interview', function () {
 
 it('cannot archive another users interview', function () {
     $other = User::factory()->create();
-    $interview = Interview::factory()->create(['user_id' => $other->id]);
+    $company = Company::factory()->create(['user_id' => $other->id]);
+    $application = JobApplication::factory()->create(['applied_by' => $other->id, 'company_id' => $company->id]);
+    $interview = Interview::factory()->create(['user_id' => $other->id, 'job_application_id' => $application->id]);
 
     $response = $this->delete(route('interviews.archive', $interview));
 

@@ -21,7 +21,7 @@ class CompanyFactory extends Factory
             ]),
             'location' => fake()->optional(0.7)->city().', '.fake()->country(),
             'notes' => fake()->optional(0.4)->paragraph(),
-            'user_id' => User::factory(),
+            'user_id' => fake()->randomElement(User::pluck('id')->toArray() ?: [User::factory()->create()->id]),
         ];
     }
 
