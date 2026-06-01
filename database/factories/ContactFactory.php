@@ -19,8 +19,8 @@ class ContactFactory extends Factory
             'email' => fake()->optional(0.7)->safeEmail(),
             'phone' => fake()->optional(0.5)->phoneNumber(),
             'notes' => fake()->optional(0.4)->sentence(),
-            'company_id' => Company::factory(),
-            'user_id' => User::factory(),
+            'company_id' => fake()->randomElement(Company::pluck('id')->toArray() ?: [Company::factory()->create()->id]),
+            'user_id' => fake()->randomElement(User::pluck('id')->toArray() ?: [User::factory()->create()->id]),
         ];
     }
 

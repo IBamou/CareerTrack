@@ -32,8 +32,8 @@ class JobApplicationFactory extends Factory
             'applied_at' => fake()->optional(0.9)->dateTimeBetween('-3 months', 'now'),
             'next_follow_up_at' => fake()->optional(0.5)->dateTimeBetween('now', '+1 month'),
             'notes' => fake()->optional(0.6)->paragraph(),
-            'company_id' => Company::factory(),
-            'applied_by' => User::factory(),
+            'company_id' => fake()->randomElement(Company::pluck('id')->toArray() ?: [Company::factory()->create()->id]),
+            'applied_by' => fake()->randomElement(User::pluck('id')->toArray() ?: [User::factory()->create()->id]),
         ];
     }
 

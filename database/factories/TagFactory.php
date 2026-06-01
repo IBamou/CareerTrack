@@ -15,7 +15,7 @@ class TagFactory extends Factory
         return [
             'name' => fake()->unique()->word(),
             'color' => fake()->randomElement(['blue', 'green', 'red', 'yellow', 'purple', 'orange', 'pink', 'indigo']),
-            'user_id' => User::factory(),
+            'user_id' => fake()->randomElement(User::pluck('id')->toArray() ?: [User::factory()->create()->id]),
         ];
     }
 

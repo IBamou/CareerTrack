@@ -18,8 +18,8 @@ class InterviewFactory extends Factory
             'scheduled_at' => fake()->dateTimeBetween('-1 month', '+1 month'),
             'notes' => fake()->optional(0.6)->sentence(),
             'result' => fake()->optional(0.4)->randomElement(['Passed', 'Rejected', 'Cancelled', 'Rescheduled']),
-            'job_application_id' => JobApplication::factory(),
-            'user_id' => User::factory(),
+            'job_application_id' => fake()->randomElement(JobApplication::pluck('id')->toArray() ?: [JobApplication::factory()->create()->id]),
+            'user_id' => fake()->randomElement(User::pluck('id')->toArray() ?: [User::factory()->create()->id]),
         ];
     }
 
