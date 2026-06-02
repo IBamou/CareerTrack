@@ -26,7 +26,7 @@ class StoreJobApplicationRequest extends FormRequest
             'location_type' => ['nullable', new Enum(JobLocationType::class)],
             'location_city' => 'nullable|string|max:255',
             'applied_at' => 'nullable|date',
-            'next_follow_up_at' => 'nullable|date',
+
             'links' => 'nullable|array',
             'links.*.label' => 'required|string|max:255',
             'links.*.url' => 'required|url:http,https',

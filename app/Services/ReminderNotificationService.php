@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ReminderStatus;
 use App\Models\Reminder;
 use App\Notifications\ReminderDue;
 use Illuminate\Support\Facades\Log;
@@ -11,7 +12,7 @@ class ReminderNotificationService
     public function sendDueReminders(): void
     {
         $reminders = Reminder::with('user')
-            ->where('status', 'pending')
+            ->where('status', ReminderStatus::Pending)
             ->where('remind_at', '<=', now())
             ->whereNull('reminded_at')
             ->get();
@@ -19,7 +20,7 @@ class ReminderNotificationService
         foreach ($reminders as $reminder) {
             try {
                 if (! $reminder->user) {
-                    $reminder->update(['status' => 'sent', 'reminded_at' => now()]);
+                    $reminder->update(['status' => ReminderStatus::Sent, 'reminded_at' => now()]);
 
                     continue;
                 }
@@ -27,7 +28,7 @@ class ReminderNotificationService
                 $reminder->user->notify(new ReminderDue($reminder));
 
                 $reminder->update([
-                    'status' => 'sent',
+                    'status' => ReminderStatus::Sent,
                     'reminded_at' => now(),
                 ]);
             } catch (\Throwable $e) {

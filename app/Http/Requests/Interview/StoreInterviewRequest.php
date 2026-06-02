@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Interview;
 
+use App\Enums\InterviewResult;
+use App\Enums\InterviewType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,10 +18,10 @@ class StoreInterviewRequest extends FormRequest
     {
         return [
             'job_application_id' => ['required', 'integer', Rule::exists('job_applications', 'id')->where('applied_by', auth()->id())],
-            'type' => 'required|string|max:255',
+            'type' => ['required', Rule::enum(InterviewType::class)],
             'scheduled_at' => 'required|date',
             'notes' => 'nullable|string',
-            'result' => 'nullable|string|max:255',
+            'result' => ['nullable', Rule::enum(InterviewResult::class)],
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ReminderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,7 @@ class Reminder extends Model
         return [
             'remind_at' => 'datetime',
             'reminded_at' => 'datetime',
+            'status' => ReminderStatus::class,
         ];
     }
 

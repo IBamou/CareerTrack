@@ -76,9 +76,7 @@ class CompanyController extends Controller
 
         $tag = Tag::find($request->tag_id);
 
-        if ($tag->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('view', $tag);
 
         $company->tags()->toggle($tag->id);
 

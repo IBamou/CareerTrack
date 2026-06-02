@@ -51,6 +51,7 @@ trait LogsActivity
             'created' => static::getActivityDescription('created', $this),
             'updated' => static::getActivityDescription('updated', $this),
             'archived' => static::getActivityDescription('archived', $this),
+            'force_deleted' => static::getActivityDescription('force_deleted', $this),
             'restored' => static::getActivityDescription('restored', $this),
         ];
 
@@ -73,6 +74,7 @@ trait LogsActivity
             'created' => "Created {$name}",
             'updated' => "Updated {$name}",
             'archived' => "Archived {$name}",
+            'force_deleted' => "Permanently deleted {$name}",
             'restored' => "Restored {$name}",
             default => null,
         };

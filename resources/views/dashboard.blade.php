@@ -47,7 +47,7 @@
                                     <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-6">No notifications</p>
                                 </template>
                                 <template x-for="(n, i) in notifications" :key="n.id">
-                                    <a :href="n.data.url || '#'" @click="fetch('/notifications/' + n.id + '/mark-read', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(() => { notifications.splice(i, 1); count--; })" class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-50 dark:border-slate-700/50 last:border-0">
+                                    <div @click="fetch('/notifications/' + n.id + '/mark-read', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(() => { notifications.splice(i, 1); count--; if(n.data.url) window.location.href = n.data.url; })" class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-50 dark:border-slate-700/50 last:border-0 cursor-pointer">
                                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
                                             <i class="fas fa-bell text-blue-600 dark:text-blue-400 text-sm"></i>
                                         </div>
@@ -58,7 +58,7 @@
                                             </template>
                                             <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5" x-text="new Date(n.created_at).toLocaleDateString()"></p>
                                         </div>
-                                    </a>
+                                    </div>
                                 </template>
                             </div>
                         </div>

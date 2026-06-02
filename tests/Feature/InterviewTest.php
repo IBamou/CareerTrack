@@ -49,14 +49,14 @@ it('can create an interview', function () {
 
     $response = $this->post(route('interviews.store'), [
         'job_application_id' => $application->id,
-        'type' => 'Phone Screen',
+        'type' => 'Phone',
         'scheduled_at' => now()->addDay()->format('Y-m-d H:i:s'),
         'notes' => 'Be prepared',
     ]);
 
     $response->assertRedirect();
     $this->assertDatabaseHas('interviews', [
-        'type' => 'Phone Screen',
+        'type' => 'Phone',
         'user_id' => $this->user->id,
     ]);
 });
@@ -89,14 +89,14 @@ it('can update an interview', function () {
     ]);
 
     $response = $this->put(route('interviews.update', $interview), [
-        'type' => 'Technical Interview',
+        'type' => 'Technical',
         'scheduled_at' => now()->addDays(2)->format('Y-m-d H:i:s'),
     ]);
 
     $response->assertRedirect();
     $this->assertDatabaseHas('interviews', [
         'id' => $interview->id,
-        'type' => 'Technical Interview',
+        'type' => 'Technical',
     ]);
 });
 
@@ -105,7 +105,7 @@ it('cannot update another users interview', function () {
     $interview = Interview::factory()->create(['user_id' => $other->id]);
 
     $response = $this->put(route('interviews.update', $interview), [
-        'type' => 'Hacked',
+        'type' => 'Technical',
         'scheduled_at' => now()->format('Y-m-d H:i:s'),
     ]);
 

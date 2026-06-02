@@ -22,6 +22,11 @@ class ContactPolicy
         return $user->is($contact->user);
     }
 
+    public function archive(User $user, Contact $contact): bool
+    {
+        return $user->is($contact->user);
+    }
+
     public function delete(User $user, Contact $contact): bool
     {
         return $user->is($contact->user);
