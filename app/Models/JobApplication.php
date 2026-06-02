@@ -19,14 +19,14 @@ class JobApplication extends Model
     /** @use HasFactory<JobApplicationFactory> */
     use HasFactory, LogsActivity, SoftDeletes;
 
-    protected $fillable = ['job_title', 'salary_min', 'salary_max', 'currency', 'benefits', 'location_type', 'location_city', 'links', 'status', 'priority', 'applied_at', 'next_follow_up_at',  'notes', 'company_id', 'applied_by'];
+    protected $fillable = ['job_title', 'salary_min', 'salary_max', 'currency', 'benefits', 'location_type', 'location_city', 'links', 'status', 'priority', 'applied_at', 'notes', 'company_id', 'applied_by'];
 
     protected $casts = [
         'status' => JobApplicationStatus::class,
         'location_type' => JobLocationType::class,
         'links' => 'array',
         'applied_at' => 'datetime',
-        'next_follow_up_at' => 'datetime',
+
         'salary_min' => 'decimal:2',
         'salary_max' => 'decimal:2',
     ];

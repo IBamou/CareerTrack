@@ -110,7 +110,11 @@ class DashboardController extends Controller
         $userId = Auth::id();
 
         $monthParam = $request->query('month');
-        $currentMonth = $monthParam ? Carbon::createFromFormat('Y-m', $monthParam)->startOfMonth() : now()->startOfMonth();
+        if ($monthParam && preg_match('/^\d{4}-\d{2}$/', $monthParam)) {
+            $currentMonth = Carbon::createFromFormat('Y-m', $monthParam)->startOfMonth();
+        } else {
+            $currentMonth = now()->startOfMonth();
+        }
 
         $calendarEventDates = Interview::where('user_id', $userId)
             ->whereNotNull('scheduled_at')

@@ -64,7 +64,7 @@
                                         <div class="w-9 h-9 rounded-full bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600 shadow-sm flex items-center justify-center flex-shrink-0 text-[#2563eb]">
                                             <i class="far fa-calendar-alt"></i>
                                         </div>
-                                        <div class="font-bold text-slate-900 dark:text-white">{{ $interview->type }}</div>
+                                        <div class="font-bold text-slate-900 dark:text-white">{{ $interview->type?->label() }}</div>
                                     </a>
                                 </td>
                                 <td class="p-4">
@@ -74,7 +74,7 @@
                                 <td class="p-4 text-slate-600 dark:text-slate-400 font-medium">{{ $interview->scheduled_at?->format('M d, Y g:i A') }}</td>
                                 <td class="p-4">
                                     @if ($interview->result)
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">{{ $interview->result }}</span>
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">{{ $interview->result->label() }}</span>
                                     @else
                                         <span class="text-slate-400 dark:text-slate-500 italic">Pending</span>
                                     @endif

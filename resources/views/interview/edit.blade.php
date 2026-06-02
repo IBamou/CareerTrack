@@ -24,11 +24,9 @@
                             <x-input-label for="type" value="Type" />
                             <select id="type" name="type" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm" required>
                                 <option value="">Select type...</option>
-                                <option value="Phone" {{ old('type', $interview->type) === 'Phone' ? 'selected' : '' }}>Phone</option>
-                                <option value="Video Call" {{ old('type', $interview->type) === 'Video Call' ? 'selected' : '' }}>Video Call</option>
-                                <option value="HR" {{ old('type', $interview->type) === 'HR' ? 'selected' : '' }}>HR</option>
-                                <option value="Technical" {{ old('type', $interview->type) === 'Technical' ? 'selected' : '' }}>Technical</option>
-                                <option value="On-site" {{ old('type', $interview->type) === 'On-site' ? 'selected' : '' }}>On-site</option>
+                                @foreach (App\Enums\InterviewType::cases() as $type)
+                                    <option value="{{ $type->value }}" {{ old('type', $interview->type?->value) === $type->value ? 'selected' : '' }}>{{ $type->label() }}</option>
+                                @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('type')" class="mt-2" />
                         </div>
@@ -43,10 +41,9 @@
                             <x-input-label for="result" value="Result" />
                             <select id="result" name="result" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-emerald-500 dark:focus:border-emerald-600 focus:ring-emerald-500 dark:focus:ring-emerald-600 rounded-xl shadow-sm">
                                 <option value="">Pending...</option>
-                                <option value="Passed" {{ old('result', $interview->result) === 'Passed' ? 'selected' : '' }}>Passed</option>
-                                <option value="Rejected" {{ old('result', $interview->result) === 'Rejected' ? 'selected' : '' }}>Rejected</option>
-                                <option value="Cancelled" {{ old('result', $interview->result) === 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                <option value="Rescheduled" {{ old('result', $interview->result) === 'Rescheduled' ? 'selected' : '' }}>Rescheduled</option>
+                                @foreach (App\Enums\InterviewResult::cases() as $result)
+                                    <option value="{{ $result->value }}" {{ old('result', $interview->result?->value) === $result->value ? 'selected' : '' }}>{{ $result->label() }}</option>
+                                @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('result')" class="mt-2" />
                         </div>

@@ -32,7 +32,7 @@
                     @foreach ($interviews as $interview)
                         <div class="p-4 sm:p-5 flex items-center justify-between">
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $interview->type }}</p>
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $interview->type?->label() }}</p>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                     {{ $interview->scheduled_at?->format('M d, Y g:i A') }}
                                     &middot; {{ $interview->jobApplication?->job_title ?? 'No application' }}

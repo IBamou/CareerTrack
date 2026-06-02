@@ -87,7 +87,7 @@ it('user cannot update another users interview', function () {
     $interview = Interview::factory()->create(['user_id' => $this->other->id]);
 
     $this->put(route('interviews.update', $interview), [
-        'type' => 'Hacked',
+        'type' => 'Technical',
         'scheduled_at' => now()->format('Y-m-d H:i:s'),
     ])->assertStatus(403);
 });

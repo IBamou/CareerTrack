@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Contact;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateContactRequest extends FormRequest
 {
@@ -14,7 +15,7 @@ class UpdateContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'company_id' => ['sometimes', 'required', 'exists:companies,id'],
+            'company_id' => ['sometimes', 'required', Rule::exists('companies', 'id')->where('user_id', auth()->id())],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'role' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],

@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">{{ $interview->type }}</x-slot>
+    <x-slot name="header">{{ $interview->type?->label() }}</x-slot>
 
     <div class="p-4 lg:p-6">
         <div class="max-w-5xl mx-auto space-y-6">
@@ -35,7 +35,7 @@
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 </div>
                 <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ $interview->type }}</h2>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ $interview->type?->label() }}</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $interview->jobApplication?->company?->name ?? 'No company' }}
                         &middot; {{ $interview->jobApplication?->job_title ?? 'No application' }}
@@ -47,7 +47,7 @@
                 <x-section-card title="Interview Details">
                     <dl class="space-y-3">
                         <div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Scheduled At</dt><dd class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{{ $interview->scheduled_at?->format('M d, Y g:i A') ?? 'Not set' }}</dd></div>
-                        <div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Result</dt><dd class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{{ $interview->result ?? 'Pending' }}</dd></div>
+                        <div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Result</dt><dd class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{{ $interview->result?->label() ?? 'Pending' }}</dd></div>
                     </dl>
                 </x-section-card>
 

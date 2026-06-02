@@ -48,7 +48,7 @@
                                     </div>
                                     <div class="flex items-center gap-2 flex-shrink-0">
                                         @if (!empty($notification->data['url']))
-                                            <a href="{{ $notification->data['url'] }}" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline">View</a>
+                                            <a href="{{ $notification->data['url'] }}" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline">{{ $notification->data['url_label'] ?? 'View' }}</a>
                                         @endif
                                         @if (!$notification->read_at)
                                             <button

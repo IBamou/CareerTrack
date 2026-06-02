@@ -460,10 +460,10 @@
                                     <i class="fas fa-calendar text-slate-400 dark:text-slate-500 group-hover:text-[#2563eb] text-sm transition-colors"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-slate-900 dark:text-white group-hover:text-[#2563eb] transition-colors truncate">{{ $interview->type }}</p>
+                                    <p class="text-sm font-medium text-slate-900 dark:text-white group-hover:text-[#2563eb] transition-colors truncate">{{ $interview->type?->label() }}</p>
                                     <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $interview->scheduled_at?->format('M d, Y g:i A') }}</p>
                                     @if ($interview->result)
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $interview->result }}</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $interview->result->label() }}</p>
                                     @endif
                                 </div>
                                 <i class="fas fa-chevron-right text-slate-300 dark:text-slate-600 group-hover:text-[#2563eb] transition-colors text-xs"></i>

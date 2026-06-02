@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\InterviewResult;
+use App\Enums\InterviewType;
 use App\Traits\LogsActivity;
 use Database\Factories\InterviewFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +21,8 @@ class Interview extends Model
 
     protected $casts = [
         'scheduled_at' => 'datetime',
+        'type' => InterviewType::class,
+        'result' => InterviewResult::class,
     ];
 
     public function jobApplication(): BelongsTo
@@ -48,6 +52,6 @@ class Interview extends Model
 
     public function activityDisplayName(): string
     {
-        return "{$this->type} for {$this->jobApplication?->job_title}";
+        return "{$this->type->value} for {$this->jobApplication?->job_title}";
     }
 }

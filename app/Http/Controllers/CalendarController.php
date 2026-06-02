@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReminderStatus;
 use App\Http\Requests\Reminder\StoreReminderRequest;
 use App\Http\Requests\Reminder\UpdateReminderRequest;
 use App\Models\Interview;
@@ -56,8 +57,11 @@ class CalendarController extends Controller
 
     public function events(Request $request)
     {
-        $month = $request->input('month', now()->month);
-        $year = $request->input('year', now()->year);
+        $month = (int) $request->input('month', now()->month);
+        $year = (int) $request->input('year', now()->year);
+
+        $month = max(1, min(12, $month));
+        $year = max(2000, min(2100, $year));
 
         return response()->json($this->getEvents($month, $year));
     }
@@ -87,40 +91,22 @@ class CalendarController extends Controller
 
         $applications = JobApplication::with('company')
             ->where('applied_by', $userId)
-            ->where(function ($q) use ($startOfMonth, $endOfMonth) {
-                $q->whereDate('applied_at', '>=', $startOfMonth)
-                    ->whereDate('applied_at', '<=', $endOfMonth)
-                    ->orWhere(function ($q2) use ($startOfMonth, $endOfMonth) {
-                        $q2->whereNotNull('next_follow_up_at')
-                            ->whereDate('next_follow_up_at', '>=', $startOfMonth)
-                            ->whereDate('next_follow_up_at', '<=', $endOfMonth);
-                    });
-            })
+            ->whereDate('applied_at', '>=', $startOfMonth)
+            ->whereDate('applied_at', '<=', $endOfMonth)
             ->get()
-            ->flatMap(fn ($a) => collect([
-                $a->applied_at && $a->applied_at->between($startOfMonth, $endOfMonth) ? [
-                    'id' => $a->id,
-                    'title' => 'Applied: '.$a->job_title,
-                    'company' => optional($a->company)->name,
-                    'date' => $a->applied_at->format('Y-m-d'),
-                    'time' => null,
-                    'type' => 'application',
-                    'url' => route('job-applications.show', $a),
-                ] : null,
-                $a->next_follow_up_at && $a->next_follow_up_at->between($startOfMonth, $endOfMonth) ? [
-                    'id' => $a->id,
-                    'title' => 'Follow up: '.$a->job_title,
-                    'company' => optional($a->company)->name,
-                    'date' => $a->next_follow_up_at->format('Y-m-d'),
-                    'time' => null,
-                    'type' => 'follow_up',
-                    'url' => route('job-applications.show', $a),
-                ] : null,
-            ])->filter());
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'title' => 'Applied: '.$a->job_title,
+                'company' => optional($a->company)->name,
+                'date' => $a->applied_at->format('Y-m-d'),
+                'time' => null,
+                'type' => 'application',
+                'url' => route('job-applications.show', $a),
+            ]);
 
         $reminders = Reminder::with('remindable')
             ->where('user_id', $userId)
-            ->where('status', 'pending')
+            ->where('status', ReminderStatus::Pending)
             ->whereDate('remind_at', '>=', $startOfMonth)
             ->whereDate('remind_at', '<=', $endOfMonth)
             ->get()
@@ -154,12 +140,21 @@ class CalendarController extends Controller
 
     public function storeReminder(StoreReminderRequest $request)
     {
+        if ($request->remindable_type && $request->remindable_id) {
+            $modelClass = $request->remindable_type;
+            $ownerColumn = $modelClass === Interview::class ? 'user_id' : 'applied_by';
+            $exists = $modelClass::where('id', $request->remindable_id)->where($ownerColumn, Auth::id())->exists();
+            if (! $exists) {
+                return response()->json(['message' => 'The specified entity does not exist or belongs to another user.'], 403);
+            }
+        }
+
         $reminder = Reminder::create([
             'user_id' => Auth::id(),
             'title' => $request->title,
             'description' => $request->description,
             'remind_at' => $request->remind_at,
-            'status' => 'pending',
+            'status' => ReminderStatus::Pending,
             'remindable_type' => $request->remindable_type,
             'remindable_id' => $request->remindable_id,
         ]);
@@ -181,6 +176,15 @@ class CalendarController extends Controller
     {
         $this->authorize('update', $reminder);
 
+        if ($request->remindable_type && $request->remindable_id) {
+            $modelClass = $request->remindable_type;
+            $ownerColumn = $modelClass === Interview::class ? 'user_id' : 'applied_by';
+            $exists = $modelClass::where('id', $request->remindable_id)->where($ownerColumn, Auth::id())->exists();
+            if (! $exists) {
+                return response()->json(['message' => 'The specified entity does not exist or belongs to another user.'], 403);
+            }
+        }
+
         $reminder->update($request->only(['title', 'description', 'remind_at', 'remindable_type', 'remindable_id']));
 
         return response()->json([
@@ -200,7 +204,7 @@ class CalendarController extends Controller
     {
         $this->authorize('update', $reminder);
 
-        $reminder->update(['status' => 'sent', 'reminded_at' => now()]);
+        $reminder->update(['status' => ReminderStatus::Sent, 'reminded_at' => now()]);
 
         return response()->json(['success' => true]);
     }

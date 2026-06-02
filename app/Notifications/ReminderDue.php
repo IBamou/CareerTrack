@@ -46,6 +46,13 @@ class ReminderDue extends Notification implements ShouldQueue
             }
         }
 
+        $url = route('calendar.index');
+        if ($reminder->remindable instanceof JobApplication) {
+            $url = route('job-applications.show', $reminder->remindable);
+        } elseif ($reminder->remindable instanceof Interview) {
+            $url = route('interviews.show', $reminder->remindable);
+        }
+
         return (new MailMessage)
             ->subject("Don't miss this: {$reminder->title}")
             ->view('emails.reminder', [
@@ -54,19 +61,30 @@ class ReminderDue extends Notification implements ShouldQueue
                 'description' => $reminder->description,
                 'date' => $reminder->remind_at->format('Y-m-d'),
                 'time' => $reminder->remind_at->format('H:i'),
-                'url' => route('calendar.index'),
+                'url' => $url,
                 'relatedInfo' => $relatedInfo,
             ]);
     }
 
     public function toArray(object $notifiable): array
     {
+        $url = null;
+        $urlLabel = null;
+        if ($this->reminder->remindable instanceof JobApplication) {
+            $url = route('job-applications.show', $this->reminder->remindable);
+            $urlLabel = 'View Application';
+        } elseif ($this->reminder->remindable instanceof Interview) {
+            $url = route('interviews.show', $this->reminder->remindable);
+            $urlLabel = 'View Interview';
+        }
+
         return [
             'reminder_id' => $this->reminder->id,
             'title' => $this->reminder->title,
             'description' => $this->reminder->description,
             'remind_at' => $this->reminder->remind_at->format('Y-m-d H:i'),
-            'url' => route('calendar.index'),
+            'url' => $url,
+            'url_label' => $urlLabel,
         ];
     }
 }

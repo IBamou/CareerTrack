@@ -88,7 +88,7 @@ class ContactController extends Controller
 
     public function archive(Contact $contact)
     {
-        $this->authorize('delete', $contact);
+        $this->authorize('archive', $contact);
         $contact->delete();
 
         return redirect()->route('contacts.index')
